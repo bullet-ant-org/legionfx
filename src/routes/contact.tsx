@@ -65,7 +65,7 @@ function ContactPage() {
             [LifeBuoy,"Personalized Support","Recommendations tailored to your trading goals."],
           ].map(([I,t,d]) => (
             <div key={t as string} className="glass rounded-3xl p-7 hover-lift">
-              <div className="h-11 w-11 rounded-xl brand-gradient grid place-items-center text-brand-foreground mb-4"><I as any size={20}/></div>
+              <div className="h-11 w-11 rounded-xl brand-gradient grid place-items-center text-brand-foreground mb-4"><I size={20}/></div>
               <h4 className="font-semibold">{t as string}</h4>
               <p className="mt-2 text-sm text-muted-foreground">{d as string}</p>
             </div>
@@ -83,7 +83,7 @@ function ContactPage() {
             [MapPin,"Office","Global HQ","Get directions →"],
           ].map(([I,t,v,s]) => (
             <div key={t as string} className="glass rounded-3xl p-6 hover-lift">
-              <div className="h-11 w-11 rounded-xl brand-gradient grid place-items-center text-brand-foreground mb-4"><I as any size={20}/></div>
+              <div className="h-11 w-11 rounded-xl brand-gradient grid place-items-center text-brand-foreground mb-4"><I size={20}/></div>
               <div className="text-xs text-muted-foreground">{t as string}</div>
               <div className="mt-1 font-semibold">{v as string}</div>
               <div className="text-xs text-muted-foreground mt-1">{s as string}</div>
@@ -165,7 +165,7 @@ function ContactPage() {
             [Briefcase,"Partnerships","Affiliate, corporate and collaboration opportunities."],
           ].map(([I,t,d]) => (
             <div key={t as string} className="glass rounded-3xl p-6 hover-lift">
-              <div className="h-10 w-10 rounded-xl brand-gradient grid place-items-center text-brand-foreground mb-4"><I as any size={18}/></div>
+              <div className="h-10 w-10 rounded-xl brand-gradient grid place-items-center text-brand-foreground mb-4"><I size={18}/></div>
               <h4 className="font-semibold">{t as string}</h4>
               <p className="mt-2 text-sm text-muted-foreground">{d as string}</p>
             </div>
@@ -214,7 +214,7 @@ function ContactPage() {
             [MessageCircle,"Telegram"],[MessageCircle,"Discord"],[Youtube,"YouTube"],
           ].map(([I,l]) => (
             <a key={l as string} href="#" className="glass rounded-2xl p-5 text-center hover-lift">
-              <div className="h-10 w-10 mx-auto rounded-xl brand-gradient grid place-items-center text-brand-foreground mb-2"><I as any size={18}/></div>
+              <div className="h-10 w-10 mx-auto rounded-xl brand-gradient grid place-items-center text-brand-foreground mb-2"><I size={18}/></div>
               <div className="text-xs">{l as string}</div>
             </a>
           ))}

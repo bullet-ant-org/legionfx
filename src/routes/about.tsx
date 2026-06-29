@@ -180,7 +180,7 @@ function AboutPage() {
             [Sparkles,"95% Signal Accuracy"],[Target,"70% Funded Success"],[Shield,"Risk Frameworks"],[TrendingUp,"Lifetime Learning"],
           ].map(([Icon, t]) => (
             <div key={t as string} className="glass rounded-2xl p-5 hover-lift">
-              <div className="h-10 w-10 rounded-xl brand-gradient grid place-items-center text-brand-foreground mb-3"><Icon as any size={18}/></div>
+              <div className="h-10 w-10 rounded-xl brand-gradient grid place-items-center text-brand-foreground mb-3"><Icon size={18}/></div>
               <div className="text-sm font-medium">{t as string}</div>
             </div>
           ))}

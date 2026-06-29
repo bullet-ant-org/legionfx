@@ -180,7 +180,7 @@ function AuthPage() {
             <div className="mt-5 grid grid-cols-2 gap-2 text-[11px]">
               {[[Shield,"End-to-End Secure"],[Zap,"Fast & Secure Login"],[Lock,"Protected User Data"],[Globe,"Global Platform"]].map(([I,t]) => (
                 <div key={t as string} className="flex items-center gap-2 glass rounded-xl px-3 py-2">
-                  <I size={13} className="text-brand"/> <span className="text-muted-foreground">{t as string}</span>
+                  {((C:any)=><C size={13} className="text-brand"/>)(I)} <span className="text-muted-foreground">{t as string}</span>
                 </div>
               ))}
             </div>

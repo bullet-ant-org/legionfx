@@ -132,16 +132,23 @@ function AuthPage() {
                     ))}
                   </div>
 
-                  <form onSubmit={submit} className="mt-6 space-y-4">
+                  {mode === "login" && (
+                    <div className="mt-5 p-3 rounded-xl border border-brand/20 bg-brand/5 text-[11px] text-muted-foreground">
+                      <span className="text-brand font-medium">Demo:</span> demo@gmail.com / demo123
+                    </div>
+                  )}
+                  <form onSubmit={submit} className="mt-4 space-y-4">
                     {mode === "signup" && (
                       <InputField icon={User} label="Full Name" type="text" required />
                     )}
-                    <InputField icon={Mail} label="Email Address" type="email" required />
+                    <InputField icon={Mail} label="Email Address" type="email" required value={email} onChange={(v) => setEmail(v)} />
                     <InputField
                       icon={Lock}
                       label="Password"
                       type={showPass ? "text" : "password"}
                       required
+                      value={password}
+                      onChange={(v) => setPassword(v)}
                       trailing={
                         <button type="button" onClick={() => setShowPass(s=>!s)} className="text-muted-foreground hover:text-foreground" aria-label="Toggle password">
                           {showPass ? <EyeOff size={16}/> : <Eye size={16}/>}
@@ -151,6 +158,8 @@ function AuthPage() {
                     {mode === "signup" && (
                       <InputField icon={Lock} label="Confirm Password" type={showPass ? "text" : "password"} required />
                     )}
+
+                    {error && <div className="text-xs text-rose-400 px-1">{error}</div>}
 
                     {mode === "login" && (
                       <div className="flex items-center justify-between text-xs">

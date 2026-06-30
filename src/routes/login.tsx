@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, User, Shield, Zap, Globe, ArrowRight, Check, X } from "lucide-react";
+import { signIn, DEMO_EMAIL, DEMO_PASSWORD } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -18,12 +19,30 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [forgot, setForgot] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState(DEMO_EMAIL);
+  const [password, setPassword] = useState(DEMO_PASSWORD);
   const navigate = useNavigate();
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setLoading(true);
-    setTimeout(() => { setLoading(false); setSuccess(true); setTimeout(() => navigate({ to: "/" }), 1400); }, 1100);
+    setTimeout(() => {
+      setLoading(false);
+      if (mode === "signup") {
+        setSuccess(true);
+        setTimeout(() => navigate({ to: "/login" }), 1400);
+        return;
+      }
+      const session = signIn(email, password);
+      if (!session) {
+        setError("Invalid credentials. Use demo@gmail.com / demo123");
+        return;
+      }
+      setSuccess(true);
+      setTimeout(() => navigate({ to: "/dashboard" }), 900);
+    }, 800);
   };
 
   return (
@@ -113,16 +132,23 @@ function AuthPage() {
                     ))}
                   </div>
 
-                  <form onSubmit={submit} className="mt-6 space-y-4">
+                  {mode === "login" && (
+                    <div className="mt-5 p-3 rounded-xl border border-brand/20 bg-brand/5 text-[11px] text-muted-foreground">
+                      <span className="text-brand font-medium">Demo:</span> demo@gmail.com / demo123
+                    </div>
+                  )}
+                  <form onSubmit={submit} className="mt-4 space-y-4">
                     {mode === "signup" && (
                       <InputField icon={User} label="Full Name" type="text" required />
                     )}
-                    <InputField icon={Mail} label="Email Address" type="email" required />
+                    <InputField icon={Mail} label="Email Address" type="email" required value={email} onChange={(v) => setEmail(v)} />
                     <InputField
                       icon={Lock}
                       label="Password"
                       type={showPass ? "text" : "password"}
                       required
+                      value={password}
+                      onChange={(v) => setPassword(v)}
                       trailing={
                         <button type="button" onClick={() => setShowPass(s=>!s)} className="text-muted-foreground hover:text-foreground" aria-label="Toggle password">
                           {showPass ? <EyeOff size={16}/> : <Eye size={16}/>}
@@ -132,6 +158,8 @@ function AuthPage() {
                     {mode === "signup" && (
                       <InputField icon={Lock} label="Confirm Password" type={showPass ? "text" : "password"} required />
                     )}
+
+                    {error && <div className="text-xs text-rose-400 px-1">{error}</div>}
 
                     {mode === "login" && (
                       <div className="flex items-center justify-between text-xs">
@@ -217,7 +245,7 @@ function AuthPage() {
   );
 }
 
-function InputField({ icon: Icon, label, type, required, trailing }: { icon: any; label: string; type: string; required?: boolean; trailing?: React.ReactNode }) {
+function InputField({ icon: Icon, label, type, required, trailing, value, onChange }: { icon: any; label: string; type: string; required?: boolean; trailing?: React.ReactNode; value?: string; onChange?: (v: string) => void }) {
   return (
     <label className="block">
       <span className="text-xs text-muted-foreground">{label}{required && <span className="text-brand"> *</span>}</span>
@@ -226,6 +254,8 @@ function InputField({ icon: Icon, label, type, required, trailing }: { icon: any
         <input
           type={type}
           required={required}
+          value={value}
+          onChange={onChange ? (e) => onChange(e.target.value) : undefined}
           className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-10 py-3 text-sm focus:outline-none focus:border-brand/50 focus:ring-2 focus:ring-brand/20 transition"
         />
         {trailing && <div className="absolute right-3 top-1/2 -translate-y-1/2">{trailing}</div>}

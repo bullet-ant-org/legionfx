@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, User, Shield, Zap, Globe, ArrowRight, Check, X } from "lucide-react";
+import { signIn, DEMO_EMAIL, DEMO_PASSWORD } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -18,12 +19,30 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [forgot, setForgot] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState(DEMO_EMAIL);
+  const [password, setPassword] = useState(DEMO_PASSWORD);
   const navigate = useNavigate();
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setLoading(true);
-    setTimeout(() => { setLoading(false); setSuccess(true); setTimeout(() => navigate({ to: "/" }), 1400); }, 1100);
+    setTimeout(() => {
+      setLoading(false);
+      if (mode === "signup") {
+        setSuccess(true);
+        setTimeout(() => navigate({ to: "/login" }), 1400);
+        return;
+      }
+      const session = signIn(email, password);
+      if (!session) {
+        setError("Invalid credentials. Use demo@gmail.com / demo123");
+        return;
+      }
+      setSuccess(true);
+      setTimeout(() => navigate({ to: "/dashboard" }), 900);
+    }, 800);
   };
 
   return (

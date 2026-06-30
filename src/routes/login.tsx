@@ -245,7 +245,7 @@ function AuthPage() {
   );
 }
 
-function InputField({ icon: Icon, label, type, required, trailing }: { icon: any; label: string; type: string; required?: boolean; trailing?: React.ReactNode }) {
+function InputField({ icon: Icon, label, type, required, trailing, value, onChange }: { icon: any; label: string; type: string; required?: boolean; trailing?: React.ReactNode; value?: string; onChange?: (v: string) => void }) {
   return (
     <label className="block">
       <span className="text-xs text-muted-foreground">{label}{required && <span className="text-brand"> *</span>}</span>
@@ -254,6 +254,8 @@ function InputField({ icon: Icon, label, type, required, trailing }: { icon: any
         <input
           type={type}
           required={required}
+          value={value}
+          onChange={onChange ? (e) => onChange(e.target.value) : undefined}
           className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-10 py-3 text-sm focus:outline-none focus:border-brand/50 focus:ring-2 focus:ring-brand/20 transition"
         />
         {trailing && <div className="absolute right-3 top-1/2 -translate-y-1/2">{trailing}</div>}

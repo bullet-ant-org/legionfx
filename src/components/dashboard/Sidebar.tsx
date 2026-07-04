@@ -134,6 +134,7 @@ export function Sidebar({
       <div className="p-3 border-t border-white/5">
         <button
           onClick={() => setLogoutOpen(true)}
+          data-no-toast
           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-rose-400 hover:bg-rose-400/10 transition ${collapsed ? "justify-center" : ""}`}
         >
           <LogOut size={18} />
@@ -141,11 +142,14 @@ export function Sidebar({
         </button>
         <button
           onClick={() => setCollapsed(!collapsed)}
+          data-no-toast
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           className={`hidden lg:flex w-full mt-2 items-center gap-2 px-3 py-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/5 transition ${collapsed ? "justify-center" : ""}`}
         >
           {collapsed ? <ChevronsRight size={16} /> : <><ChevronsLeft size={16} /><span className="text-xs">Collapse</span></>}
         </button>
       </div>
+
 
       <Modal open={logoutOpen} onClose={() => setLogoutOpen(false)} title="Log out of LEGIONFX?">
         <p className="text-sm text-muted-foreground">You'll need to sign in again to access your dashboard.</p>

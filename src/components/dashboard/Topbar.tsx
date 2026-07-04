@@ -46,7 +46,7 @@ export function Topbar({ onOpenMobile }: { onOpenMobile: () => void }) {
   return (
     <header className="sticky top-0 z-30 h-[70px] glass-strong border-b border-white/5">
       <div className="h-full px-4 md:px-6 flex items-center gap-3">
-        <button onClick={onOpenMobile} className="lg:hidden p-2 rounded-lg hover:bg-white/5" aria-label="Open menu">
+        <button onClick={onOpenMobile} data-no-toast className="lg:hidden p-2 rounded-lg hover:bg-white/5" aria-label="Open menu">
           <Menu size={20} />
         </button>
 

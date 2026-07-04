@@ -1,9 +1,11 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bell, Search, Menu, Wallet, User2, ChevronDown, LogOut, Key, Shield, CreditCard, Settings, ArrowDownToLine, ArrowUpFromLine, BellDot, Code2, Banknote } from "lucide-react";
+import { Bell, Search, Menu, Wallet, User2, ChevronDown, LogOut, Key, Shield, CreditCard, Settings, ArrowDownToLine, ArrowUpFromLine, BellDot, Code2, Banknote, Sun, Moon } from "lucide-react";
 import { notifications as demoNotifs, wallet, user } from "@/lib/demo-data";
 import { signOut } from "@/lib/auth";
+import { useTheme } from "@/lib/theme";
+
 
 const routeTitles: Record<string, { title: string; crumb: string }> = {
   "/dashboard": { title: "Overview", crumb: "Dashboard / Overview" },

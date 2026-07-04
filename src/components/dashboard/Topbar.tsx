@@ -76,6 +76,17 @@ export function Topbar({ onOpenMobile }: { onOpenMobile: () => void }) {
             </div>
           </Link>
 
+          {/* Theme toggle */}
+          <button
+            onClick={toggle}
+            data-no-toast
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            className="p-2.5 rounded-xl glass hover:bg-white/10 transition"
+            title={theme === "dark" ? "Light mode" : "Dark mode"}
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+
           {/* Notifications */}
           <div className="relative" ref={notifRef}>
             <button

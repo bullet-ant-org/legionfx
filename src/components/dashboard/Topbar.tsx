@@ -1,9 +1,11 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bell, Search, Menu, Wallet, User2, ChevronDown, LogOut, Key, Shield, CreditCard, Settings, ArrowDownToLine, ArrowUpFromLine, BellDot, Code2, Banknote } from "lucide-react";
+import { Bell, Search, Menu, Wallet, User2, ChevronDown, LogOut, Key, Shield, CreditCard, Settings, ArrowDownToLine, ArrowUpFromLine, BellDot, Code2, Banknote, Sun, Moon } from "lucide-react";
 import { notifications as demoNotifs, wallet, user } from "@/lib/demo-data";
 import { signOut } from "@/lib/auth";
+import { useTheme } from "@/lib/theme";
+
 
 const routeTitles: Record<string, { title: string; crumb: string }> = {
   "/dashboard": { title: "Overview", crumb: "Dashboard / Overview" },
@@ -22,6 +24,8 @@ const routeTitles: Record<string, { title: string; crumb: string }> = {
 export function Topbar({ onOpenMobile }: { onOpenMobile: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const info = routeTitles[pathname] ?? { title: "Dashboard", crumb: "Dashboard" };
+  const { theme, toggle } = useTheme();
+
 
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -42,7 +46,7 @@ export function Topbar({ onOpenMobile }: { onOpenMobile: () => void }) {
   return (
     <header className="sticky top-0 z-30 h-[70px] glass-strong border-b border-white/5">
       <div className="h-full px-4 md:px-6 flex items-center gap-3">
-        <button onClick={onOpenMobile} className="lg:hidden p-2 rounded-lg hover:bg-white/5" aria-label="Open menu">
+        <button onClick={onOpenMobile} data-no-toast className="lg:hidden p-2 rounded-lg hover:bg-white/5" aria-label="Open menu">
           <Menu size={20} />
         </button>
 
@@ -72,10 +76,24 @@ export function Topbar({ onOpenMobile }: { onOpenMobile: () => void }) {
             </div>
           </Link>
 
+          {/* Theme toggle */}
+          <button
+            onClick={toggle}
+            data-no-toast
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            className="p-2.5 rounded-xl glass hover:bg-white/10 transition"
+            title={theme === "dark" ? "Light mode" : "Dark mode"}
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+
           {/* Notifications */}
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setNotifOpen((o) => !o)}
+              data-no-toast
+              aria-haspopup="menu"
+              aria-expanded={notifOpen}
               className="relative p-2.5 rounded-xl glass hover:bg-white/10 transition"
               aria-label="Notifications"
             >
@@ -117,6 +135,10 @@ export function Topbar({ onOpenMobile }: { onOpenMobile: () => void }) {
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setProfileOpen((o) => !o)}
+              data-no-toast
+              aria-haspopup="menu"
+              aria-expanded={profileOpen}
+              aria-label="Account menu"
               className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl glass hover:bg-white/10 transition"
             >
               <div className="h-8 w-8 rounded-lg brand-gradient grid place-items-center text-brand-foreground text-sm font-semibold">{user.initials}</div>

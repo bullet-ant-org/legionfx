@@ -119,7 +119,7 @@ export function Modal({ open, onClose, title, children, size = "md" }: { open: b
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">{title}</h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xl leading-none">×</button>
+          <button onClick={onClose} data-no-toast aria-label="Close" className="text-muted-foreground hover:text-foreground text-xl leading-none">×</button>
         </div>
         {children}
       </motion.div>

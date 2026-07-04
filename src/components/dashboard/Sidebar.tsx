@@ -51,17 +51,21 @@ export function Sidebar({
         )}
         <button
           onClick={() => setMobileOpen(false)}
+          data-no-toast
           className="lg:hidden ml-auto p-1.5 rounded-lg hover:bg-white/5"
           aria-label="Close menu"
         >
           <X size={18} />
         </button>
+
       </div>
 
       {/* User card / accordion */}
       <div className="px-3">
         <button
           onClick={() => setAccordion((a) => !a)}
+          data-no-toast
+          aria-expanded={accordion}
           className={`w-full glass rounded-2xl p-3 flex items-center gap-3 hover:bg-white/5 transition ${collapsed ? "justify-center" : ""}`}
         >
           <div className="h-10 w-10 rounded-xl brand-gradient grid place-items-center font-semibold text-brand-foreground shrink-0">
@@ -134,6 +138,7 @@ export function Sidebar({
       <div className="p-3 border-t border-white/5">
         <button
           onClick={() => setLogoutOpen(true)}
+          data-no-toast
           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-rose-400 hover:bg-rose-400/10 transition ${collapsed ? "justify-center" : ""}`}
         >
           <LogOut size={18} />
@@ -141,11 +146,14 @@ export function Sidebar({
         </button>
         <button
           onClick={() => setCollapsed(!collapsed)}
+          data-no-toast
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           className={`hidden lg:flex w-full mt-2 items-center gap-2 px-3 py-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/5 transition ${collapsed ? "justify-center" : ""}`}
         >
           {collapsed ? <ChevronsRight size={16} /> : <><ChevronsLeft size={16} /><span className="text-xs">Collapse</span></>}
         </button>
       </div>
+
 
       <Modal open={logoutOpen} onClose={() => setLogoutOpen(false)} title="Log out of LEGIONFX?">
         <p className="text-sm text-muted-foreground">You'll need to sign in again to access your dashboard.</p>

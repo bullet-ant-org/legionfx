@@ -80,6 +80,53 @@
   --shadow-card: 0 30px 60px -30px oklch(0 0 0 / 0.6);
 }
 
+.light {
+  --background: oklch(0.98 0.005 80);
+  --foreground: oklch(0.18 0.02 50);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.02 50);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.02 50);
+
+  --primary: oklch(0.66 0.20 50);
+  --primary-foreground: oklch(0.99 0.005 80);
+  --brand: oklch(0.66 0.20 50);
+  --brand-foreground: oklch(0.99 0.005 80);
+  --brand-glow: oklch(0.72 0.21 55);
+
+  --secondary: oklch(0.94 0.01 60);
+  --secondary-foreground: oklch(0.18 0.02 50);
+  --muted: oklch(0.94 0.01 60);
+  --muted-foreground: oklch(0.45 0.02 60);
+  --accent: oklch(0.92 0.02 60);
+  --accent-foreground: oklch(0.18 0.02 50);
+  --destructive: oklch(0.58 0.22 25);
+  --destructive-foreground: oklch(0.99 0.005 80);
+  --border: oklch(0 0 0 / 10%);
+  --input: oklch(0 0 0 / 12%);
+  --ring: oklch(0.66 0.20 50);
+
+  --gradient-hero: radial-gradient(80% 60% at 70% 10%, oklch(0.72 0.19 50 / 0.18), transparent 60%),
+                   radial-gradient(60% 50% at 20% 90%, oklch(0.68 0.18 295 / 0.10), transparent 60%);
+  --shadow-card: 0 30px 60px -30px oklch(0 0 0 / 0.2);
+}
+
+.light body {
+  background-image:
+    radial-gradient(60% 50% at 80% -10%, oklch(0.72 0.19 50 / 0.10), transparent 60%),
+    radial-gradient(50% 40% at 0% 10%, oklch(0.68 0.18 295 / 0.06), transparent 60%);
+}
+
+.light .glass {
+  background: color-mix(in oklab, var(--card) 85%, transparent);
+  border-color: oklch(0 0 0 / 0.08);
+}
+.light .glass-strong {
+  background: color-mix(in oklab, var(--card) 92%, transparent);
+  border-color: oklch(0 0 0 / 0.10);
+}
+
+
 @layer base {
   * { border-color: var(--color-border); }
   html { scroll-behavior: smooth; }

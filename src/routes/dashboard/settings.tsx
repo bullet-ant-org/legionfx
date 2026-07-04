@@ -3,10 +3,12 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   User, Bell, Palette, Globe, Mail, Smartphone, Monitor, Moon, Sun,
-  DollarSign, Zap, Check, ChevronRight,
+  DollarSign, Zap, Check,
 } from "lucide-react";
 import { GlassCard, SectionTitle, Field, inputCls } from "@/components/dashboard/primitives";
 import { user } from "@/lib/demo-data";
+import { useTheme } from "@/lib/theme";
+
 
 export const Route = createFileRoute("/dashboard/settings")({
   ssr: false,

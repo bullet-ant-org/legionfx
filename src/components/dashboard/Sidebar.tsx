@@ -64,6 +64,8 @@ export function Sidebar({
       <div className="px-3">
         <button
           onClick={() => setAccordion((a) => !a)}
+          data-no-toast
+          aria-expanded={accordion}
           className={`w-full glass rounded-2xl p-3 flex items-center gap-3 hover:bg-white/5 transition ${collapsed ? "justify-center" : ""}`}
         >
           <div className="h-10 w-10 rounded-xl brand-gradient grid place-items-center font-semibold text-brand-foreground shrink-0">

@@ -135,6 +135,10 @@ export function Topbar({ onOpenMobile }: { onOpenMobile: () => void }) {
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setProfileOpen((o) => !o)}
+              data-no-toast
+              aria-haspopup="menu"
+              aria-expanded={profileOpen}
+              aria-label="Account menu"
               className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl glass hover:bg-white/10 transition"
             >
               <div className="h-8 w-8 rounded-lg brand-gradient grid place-items-center text-brand-foreground text-sm font-semibold">{user.initials}</div>

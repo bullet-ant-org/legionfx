@@ -26,6 +26,10 @@ const sections = [
 
 function SettingsPage() {
   const [tab, setTab] = useState<(typeof sections)[number]["id"]>("account");
+  const { theme, setTheme } = useTheme();
+  const [accent, setAccent] = useState("#F58C1F");
+  const [density, setDensity] = useState("Comfortable");
+
 
   return (
     <div className="space-y-6">

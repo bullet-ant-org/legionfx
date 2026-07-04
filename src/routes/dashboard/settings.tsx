@@ -99,20 +99,44 @@ function SettingsPage() {
               <div>
                 <div className="text-xs text-muted-foreground mb-2">Theme</div>
                 <div className="grid grid-cols-3 gap-3">
-                  {[{ icon: Moon, label: "Dark", active: true }, { icon: Sun, label: "Light" }, { icon: Monitor, label: "System" }].map((t) => (
-                    <button key={t.label} className={`rounded-xl p-4 flex flex-col items-center gap-2 border transition ${t.active ? "border-brand bg-brand/10" : "border-white/10 glass hover:bg-white/10"}`}>
-                      <t.icon size={20} className={t.active ? "text-brand" : ""} />
-                      <span className="text-xs font-medium">{t.label}</span>
-                      {t.active && <Check size={12} className="text-brand" />}
-                    </button>
-                  ))}
+                  {[
+                    { icon: Moon, label: "Dark", value: "dark" as const },
+                    { icon: Sun, label: "Light", value: "light" as const },
+                    { icon: Monitor, label: "System", value: "system" as const },
+                  ].map((t) => {
+                    const active = t.value === "system" ? false : theme === t.value;
+                    return (
+                      <button
+                        key={t.label}
+                        data-no-toast
+                        onClick={() => {
+                          if (t.value === "system") {
+                            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                            setTheme(prefersDark ? "dark" : "light");
+                          } else setTheme(t.value);
+                        }}
+                        className={`rounded-xl p-4 flex flex-col items-center gap-2 border transition ${active ? "border-brand bg-brand/10" : "border-white/10 glass hover:bg-white/10"}`}
+                      >
+                        <t.icon size={20} className={active ? "text-brand" : ""} />
+                        <span className="text-xs font-medium">{t.label}</span>
+                        {active && <Check size={12} className="text-brand" />}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
               <div className="mt-6">
                 <div className="text-xs text-muted-foreground mb-2">Accent Color</div>
                 <div className="flex gap-2">
                   {["#F58C1F", "#3B82F6", "#10B981", "#8B5CF6", "#EC4899"].map((c) => (
-                    <button key={c} className={`h-10 w-10 rounded-xl border-2 ${c === "#F58C1F" ? "border-white" : "border-transparent"}`} style={{ background: c }} />
+                    <button
+                      key={c}
+                      data-no-toast
+                      onClick={() => setAccent(c)}
+                      aria-label={`Accent ${c}`}
+                      className={`h-10 w-10 rounded-xl border-2 transition ${c === accent ? "border-foreground scale-110" : "border-transparent"}`}
+                      style={{ background: c }}
+                    />
                   ))}
                 </div>
               </div>
@@ -120,10 +144,18 @@ function SettingsPage() {
                 <div className="text-xs text-muted-foreground mb-2">Density</div>
                 <div className="flex gap-2">
                   {["Compact", "Comfortable", "Spacious"].map((d) => (
-                    <button key={d} className={`px-4 py-2 rounded-xl text-xs ${d === "Comfortable" ? "brand-gradient text-brand-foreground" : "glass"}`}>{d}</button>
+                    <button
+                      key={d}
+                      data-no-toast
+                      onClick={() => setDensity(d)}
+                      className={`px-4 py-2 rounded-xl text-xs transition ${d === density ? "brand-gradient text-brand-foreground" : "glass hover:bg-white/10"}`}
+                    >
+                      {d}
+                    </button>
                   ))}
                 </div>
               </div>
+
             </GlassCard>
           )}
 

@@ -24,6 +24,8 @@ const routeTitles: Record<string, { title: string; crumb: string }> = {
 export function Topbar({ onOpenMobile }: { onOpenMobile: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const info = routeTitles[pathname] ?? { title: "Dashboard", crumb: "Dashboard" };
+  const { theme, toggle } = useTheme();
+
 
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);

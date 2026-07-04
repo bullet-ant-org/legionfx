@@ -51,11 +51,13 @@ export function Sidebar({
         )}
         <button
           onClick={() => setMobileOpen(false)}
+          data-no-toast
           className="lg:hidden ml-auto p-1.5 rounded-lg hover:bg-white/5"
           aria-label="Close menu"
         >
           <X size={18} />
         </button>
+
       </div>
 
       {/* User card / accordion */}

@@ -91,6 +91,9 @@ export function Topbar({ onOpenMobile }: { onOpenMobile: () => void }) {
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setNotifOpen((o) => !o)}
+              data-no-toast
+              aria-haspopup="menu"
+              aria-expanded={notifOpen}
               className="relative p-2.5 rounded-xl glass hover:bg-white/10 transition"
               aria-label="Notifications"
             >

@@ -5,7 +5,7 @@ import { Send, Trash2 } from "lucide-react";
 import { GlassCard, Modal, Field, inputCls, StatCard, StatusPill } from "@/components/dashboard/primitives";
 import { adminSignals } from "@/lib/admin-data";
 
-type Signal = typeof adminSignals[number] & { id: string };
+type Signal = typeof adminSignals[number] & { id: string; sl?: number; tp?: number };
 const seed: Signal[] = adminSignals.map((s, i) => ({ ...s, id: `sig-${i}` }));
 
 export const Route = createFileRoute("/admin/signals")({ component: SignalsPage });

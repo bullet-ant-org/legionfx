@@ -31,10 +31,18 @@ import { Route as DashboardBotsRouteImport } from './routes/dashboard/bots'
 import { Route as DashboardAcademyRouteImport } from './routes/dashboard/academy'
 import { Route as AdminWithdrawalsRouteImport } from './routes/admin/withdrawals'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminSupportRouteImport } from './routes/admin/support'
+import { Route as AdminSignalsRouteImport } from './routes/admin/signals'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
+import { Route as AdminPropFirmRouteImport } from './routes/admin/prop-firm'
+import { Route as AdminProfileRouteImport } from './routes/admin/profile'
 import { Route as AdminPricingRouteImport } from './routes/admin/pricing'
 import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
 import { Route as AdminNotifyRouteImport } from './routes/admin/notify'
 import { Route as AdminDepositsRouteImport } from './routes/admin/deposits'
+import { Route as AdminBotsRouteImport } from './routes/admin/bots'
+import { Route as AdminAuditRouteImport } from './routes/admin/audit'
+import { Route as AdminAcademyRouteImport } from './routes/admin/academy'
 
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
@@ -146,6 +154,31 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminSupportRoute = AdminSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminSignalsRoute = AdminSignalsRouteImport.update({
+  id: '/signals',
+  path: '/signals',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPropFirmRoute = AdminPropFirmRouteImport.update({
+  id: '/prop-firm',
+  path: '/prop-firm',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminProfileRoute = AdminProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminPricingRoute = AdminPricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
@@ -166,6 +199,21 @@ const AdminDepositsRoute = AdminDepositsRouteImport.update({
   path: '/deposits',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminBotsRoute = AdminBotsRouteImport.update({
+  id: '/bots',
+  path: '/bots',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminAcademyRoute = AdminAcademyRouteImport.update({
+  id: '/academy',
+  path: '/academy',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -176,10 +224,18 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/services': typeof ServicesRoute
+  '/admin/academy': typeof AdminAcademyRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/bots': typeof AdminBotsRoute
   '/admin/deposits': typeof AdminDepositsRoute
   '/admin/notify': typeof AdminNotifyRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/pricing': typeof AdminPricingRoute
+  '/admin/profile': typeof AdminProfileRoute
+  '/admin/prop-firm': typeof AdminPropFirmRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/signals': typeof AdminSignalsRoute
+  '/admin/support': typeof AdminSupportRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/withdrawals': typeof AdminWithdrawalsRoute
   '/dashboard/academy': typeof DashboardAcademyRoute
@@ -202,10 +258,18 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/services': typeof ServicesRoute
+  '/admin/academy': typeof AdminAcademyRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/bots': typeof AdminBotsRoute
   '/admin/deposits': typeof AdminDepositsRoute
   '/admin/notify': typeof AdminNotifyRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/pricing': typeof AdminPricingRoute
+  '/admin/profile': typeof AdminProfileRoute
+  '/admin/prop-firm': typeof AdminPropFirmRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/signals': typeof AdminSignalsRoute
+  '/admin/support': typeof AdminSupportRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/withdrawals': typeof AdminWithdrawalsRoute
   '/dashboard/academy': typeof DashboardAcademyRoute
@@ -231,10 +295,18 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/services': typeof ServicesRoute
+  '/admin/academy': typeof AdminAcademyRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/bots': typeof AdminBotsRoute
   '/admin/deposits': typeof AdminDepositsRoute
   '/admin/notify': typeof AdminNotifyRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/pricing': typeof AdminPricingRoute
+  '/admin/profile': typeof AdminProfileRoute
+  '/admin/prop-firm': typeof AdminPropFirmRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/signals': typeof AdminSignalsRoute
+  '/admin/support': typeof AdminSupportRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/withdrawals': typeof AdminWithdrawalsRoute
   '/dashboard/academy': typeof DashboardAcademyRoute
@@ -261,10 +333,18 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/services'
+    | '/admin/academy'
+    | '/admin/audit'
+    | '/admin/bots'
     | '/admin/deposits'
     | '/admin/notify'
     | '/admin/payments'
     | '/admin/pricing'
+    | '/admin/profile'
+    | '/admin/prop-firm'
+    | '/admin/settings'
+    | '/admin/signals'
+    | '/admin/support'
     | '/admin/users'
     | '/admin/withdrawals'
     | '/dashboard/academy'
@@ -287,10 +367,18 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/services'
+    | '/admin/academy'
+    | '/admin/audit'
+    | '/admin/bots'
     | '/admin/deposits'
     | '/admin/notify'
     | '/admin/payments'
     | '/admin/pricing'
+    | '/admin/profile'
+    | '/admin/prop-firm'
+    | '/admin/settings'
+    | '/admin/signals'
+    | '/admin/support'
     | '/admin/users'
     | '/admin/withdrawals'
     | '/dashboard/academy'
@@ -315,10 +403,18 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/services'
+    | '/admin/academy'
+    | '/admin/audit'
+    | '/admin/bots'
     | '/admin/deposits'
     | '/admin/notify'
     | '/admin/payments'
     | '/admin/pricing'
+    | '/admin/profile'
+    | '/admin/prop-firm'
+    | '/admin/settings'
+    | '/admin/signals'
+    | '/admin/support'
     | '/admin/users'
     | '/admin/withdrawals'
     | '/dashboard/academy'
@@ -502,6 +598,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/support': {
+      id: '/admin/support'
+      path: '/support'
+      fullPath: '/admin/support'
+      preLoaderRoute: typeof AdminSupportRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/signals': {
+      id: '/admin/signals'
+      path: '/signals'
+      fullPath: '/admin/signals'
+      preLoaderRoute: typeof AdminSignalsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/prop-firm': {
+      id: '/admin/prop-firm'
+      path: '/prop-firm'
+      fullPath: '/admin/prop-firm'
+      preLoaderRoute: typeof AdminPropFirmRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/profile': {
+      id: '/admin/profile'
+      path: '/profile'
+      fullPath: '/admin/profile'
+      preLoaderRoute: typeof AdminProfileRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/pricing': {
       id: '/admin/pricing'
       path: '/pricing'
@@ -530,24 +661,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDepositsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/bots': {
+      id: '/admin/bots'
+      path: '/bots'
+      fullPath: '/admin/bots'
+      preLoaderRoute: typeof AdminBotsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/academy': {
+      id: '/admin/academy'
+      path: '/academy'
+      fullPath: '/admin/academy'
+      preLoaderRoute: typeof AdminAcademyRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
   }
 }
 
 interface AdminRouteRouteChildren {
+  AdminAcademyRoute: typeof AdminAcademyRoute
+  AdminAuditRoute: typeof AdminAuditRoute
+  AdminBotsRoute: typeof AdminBotsRoute
   AdminDepositsRoute: typeof AdminDepositsRoute
   AdminNotifyRoute: typeof AdminNotifyRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminPricingRoute: typeof AdminPricingRoute
+  AdminProfileRoute: typeof AdminProfileRoute
+  AdminPropFirmRoute: typeof AdminPropFirmRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminSignalsRoute: typeof AdminSignalsRoute
+  AdminSupportRoute: typeof AdminSupportRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminWithdrawalsRoute: typeof AdminWithdrawalsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminAcademyRoute: AdminAcademyRoute,
+  AdminAuditRoute: AdminAuditRoute,
+  AdminBotsRoute: AdminBotsRoute,
   AdminDepositsRoute: AdminDepositsRoute,
   AdminNotifyRoute: AdminNotifyRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
   AdminPricingRoute: AdminPricingRoute,
+  AdminProfileRoute: AdminProfileRoute,
+  AdminPropFirmRoute: AdminPropFirmRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminSignalsRoute: AdminSignalsRoute,
+  AdminSupportRoute: AdminSupportRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminWithdrawalsRoute: AdminWithdrawalsRoute,
   AdminIndexRoute: AdminIndexRoute,

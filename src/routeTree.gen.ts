@@ -29,7 +29,12 @@ import { Route as DashboardProfileRouteImport } from './routes/dashboard/profile
 import { Route as DashboardMessagesRouteImport } from './routes/dashboard/messages'
 import { Route as DashboardBotsRouteImport } from './routes/dashboard/bots'
 import { Route as DashboardAcademyRouteImport } from './routes/dashboard/academy'
+import { Route as AdminWithdrawalsRouteImport } from './routes/admin/withdrawals'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminPricingRouteImport } from './routes/admin/pricing'
+import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
+import { Route as AdminNotifyRouteImport } from './routes/admin/notify'
+import { Route as AdminDepositsRouteImport } from './routes/admin/deposits'
 
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
@@ -131,9 +136,34 @@ const DashboardAcademyRoute = DashboardAcademyRouteImport.update({
   path: '/academy',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const AdminWithdrawalsRoute = AdminWithdrawalsRouteImport.update({
+  id: '/withdrawals',
+  path: '/withdrawals',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPricingRoute = AdminPricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminNotifyRoute = AdminNotifyRouteImport.update({
+  id: '/notify',
+  path: '/notify',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminDepositsRoute = AdminDepositsRouteImport.update({
+  id: '/deposits',
+  path: '/deposits',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 
@@ -146,7 +176,12 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/services': typeof ServicesRoute
+  '/admin/deposits': typeof AdminDepositsRoute
+  '/admin/notify': typeof AdminNotifyRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/pricing': typeof AdminPricingRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/withdrawals': typeof AdminWithdrawalsRoute
   '/dashboard/academy': typeof DashboardAcademyRoute
   '/dashboard/bots': typeof DashboardBotsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
@@ -167,7 +202,12 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/services': typeof ServicesRoute
+  '/admin/deposits': typeof AdminDepositsRoute
+  '/admin/notify': typeof AdminNotifyRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/pricing': typeof AdminPricingRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/withdrawals': typeof AdminWithdrawalsRoute
   '/dashboard/academy': typeof DashboardAcademyRoute
   '/dashboard/bots': typeof DashboardBotsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
@@ -191,7 +231,12 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/services': typeof ServicesRoute
+  '/admin/deposits': typeof AdminDepositsRoute
+  '/admin/notify': typeof AdminNotifyRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/pricing': typeof AdminPricingRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/withdrawals': typeof AdminWithdrawalsRoute
   '/dashboard/academy': typeof DashboardAcademyRoute
   '/dashboard/bots': typeof DashboardBotsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
@@ -216,7 +261,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/services'
+    | '/admin/deposits'
+    | '/admin/notify'
+    | '/admin/payments'
+    | '/admin/pricing'
     | '/admin/users'
+    | '/admin/withdrawals'
     | '/dashboard/academy'
     | '/dashboard/bots'
     | '/dashboard/messages'
@@ -237,7 +287,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/services'
+    | '/admin/deposits'
+    | '/admin/notify'
+    | '/admin/payments'
+    | '/admin/pricing'
     | '/admin/users'
+    | '/admin/withdrawals'
     | '/dashboard/academy'
     | '/dashboard/bots'
     | '/dashboard/messages'
@@ -260,7 +315,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/services'
+    | '/admin/deposits'
+    | '/admin/notify'
+    | '/admin/payments'
+    | '/admin/pricing'
     | '/admin/users'
+    | '/admin/withdrawals'
     | '/dashboard/academy'
     | '/dashboard/bots'
     | '/dashboard/messages'
@@ -428,6 +488,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAcademyRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/admin/withdrawals': {
+      id: '/admin/withdrawals'
+      path: '/withdrawals'
+      fullPath: '/admin/withdrawals'
+      preLoaderRoute: typeof AdminWithdrawalsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/users': {
       id: '/admin/users'
       path: '/users'
@@ -435,16 +502,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/pricing': {
+      id: '/admin/pricing'
+      path: '/pricing'
+      fullPath: '/admin/pricing'
+      preLoaderRoute: typeof AdminPricingRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/notify': {
+      id: '/admin/notify'
+      path: '/notify'
+      fullPath: '/admin/notify'
+      preLoaderRoute: typeof AdminNotifyRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/deposits': {
+      id: '/admin/deposits'
+      path: '/deposits'
+      fullPath: '/admin/deposits'
+      preLoaderRoute: typeof AdminDepositsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
   }
 }
 
 interface AdminRouteRouteChildren {
+  AdminDepositsRoute: typeof AdminDepositsRoute
+  AdminNotifyRoute: typeof AdminNotifyRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminPricingRoute: typeof AdminPricingRoute
   AdminUsersRoute: typeof AdminUsersRoute
+  AdminWithdrawalsRoute: typeof AdminWithdrawalsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminDepositsRoute: AdminDepositsRoute,
+  AdminNotifyRoute: AdminNotifyRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminPricingRoute: AdminPricingRoute,
   AdminUsersRoute: AdminUsersRoute,
+  AdminWithdrawalsRoute: AdminWithdrawalsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 

@@ -15,8 +15,10 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as DashboardWalletRouteImport } from './routes/dashboard/wallet'
 import { Route as DashboardSupportRouteImport } from './routes/dashboard/support'
 import { Route as DashboardSignalsRouteImport } from './routes/dashboard/signals'
@@ -27,6 +29,20 @@ import { Route as DashboardProfileRouteImport } from './routes/dashboard/profile
 import { Route as DashboardMessagesRouteImport } from './routes/dashboard/messages'
 import { Route as DashboardBotsRouteImport } from './routes/dashboard/bots'
 import { Route as DashboardAcademyRouteImport } from './routes/dashboard/academy'
+import { Route as AdminWithdrawalsRouteImport } from './routes/admin/withdrawals'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminSupportRouteImport } from './routes/admin/support'
+import { Route as AdminSignalsRouteImport } from './routes/admin/signals'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
+import { Route as AdminPropFirmRouteImport } from './routes/admin/prop-firm'
+import { Route as AdminProfileRouteImport } from './routes/admin/profile'
+import { Route as AdminPricingRouteImport } from './routes/admin/pricing'
+import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
+import { Route as AdminNotifyRouteImport } from './routes/admin/notify'
+import { Route as AdminDepositsRouteImport } from './routes/admin/deposits'
+import { Route as AdminBotsRouteImport } from './routes/admin/bots'
+import { Route as AdminAuditRouteImport } from './routes/admin/audit'
+import { Route as AdminAcademyRouteImport } from './routes/admin/academy'
 
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
@@ -58,6 +74,11 @@ const DashboardRouteRoute = DashboardRouteRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -67,6 +88,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardRouteRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 const DashboardWalletRoute = DashboardWalletRouteImport.update({
   id: '/wallet',
@@ -118,15 +144,100 @@ const DashboardAcademyRoute = DashboardAcademyRouteImport.update({
   path: '/academy',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const AdminWithdrawalsRoute = AdminWithdrawalsRouteImport.update({
+  id: '/withdrawals',
+  path: '/withdrawals',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminSupportRoute = AdminSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminSignalsRoute = AdminSignalsRouteImport.update({
+  id: '/signals',
+  path: '/signals',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPropFirmRoute = AdminPropFirmRouteImport.update({
+  id: '/prop-firm',
+  path: '/prop-firm',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminProfileRoute = AdminProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPricingRoute = AdminPricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminNotifyRoute = AdminNotifyRouteImport.update({
+  id: '/notify',
+  path: '/notify',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminDepositsRoute = AdminDepositsRouteImport.update({
+  id: '/deposits',
+  path: '/deposits',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminBotsRoute = AdminBotsRouteImport.update({
+  id: '/bots',
+  path: '/bots',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminAcademyRoute = AdminAcademyRouteImport.update({
+  id: '/academy',
+  path: '/academy',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/services': typeof ServicesRoute
+  '/admin/academy': typeof AdminAcademyRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/bots': typeof AdminBotsRoute
+  '/admin/deposits': typeof AdminDepositsRoute
+  '/admin/notify': typeof AdminNotifyRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/pricing': typeof AdminPricingRoute
+  '/admin/profile': typeof AdminProfileRoute
+  '/admin/prop-firm': typeof AdminPropFirmRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/signals': typeof AdminSignalsRoute
+  '/admin/support': typeof AdminSupportRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/withdrawals': typeof AdminWithdrawalsRoute
   '/dashboard/academy': typeof DashboardAcademyRoute
   '/dashboard/bots': typeof DashboardBotsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
@@ -137,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/signals': typeof DashboardSignalsRoute
   '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/wallet': typeof DashboardWalletRoute
+  '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRoutesByTo {
@@ -146,6 +258,20 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/services': typeof ServicesRoute
+  '/admin/academy': typeof AdminAcademyRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/bots': typeof AdminBotsRoute
+  '/admin/deposits': typeof AdminDepositsRoute
+  '/admin/notify': typeof AdminNotifyRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/pricing': typeof AdminPricingRoute
+  '/admin/profile': typeof AdminProfileRoute
+  '/admin/prop-firm': typeof AdminPropFirmRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/signals': typeof AdminSignalsRoute
+  '/admin/support': typeof AdminSupportRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/withdrawals': typeof AdminWithdrawalsRoute
   '/dashboard/academy': typeof DashboardAcademyRoute
   '/dashboard/bots': typeof DashboardBotsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
@@ -156,17 +282,33 @@ export interface FileRoutesByTo {
   '/dashboard/signals': typeof DashboardSignalsRoute
   '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/wallet': typeof DashboardWalletRoute
+  '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/services': typeof ServicesRoute
+  '/admin/academy': typeof AdminAcademyRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/bots': typeof AdminBotsRoute
+  '/admin/deposits': typeof AdminDepositsRoute
+  '/admin/notify': typeof AdminNotifyRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/pricing': typeof AdminPricingRoute
+  '/admin/profile': typeof AdminProfileRoute
+  '/admin/prop-firm': typeof AdminPropFirmRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/signals': typeof AdminSignalsRoute
+  '/admin/support': typeof AdminSupportRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/withdrawals': typeof AdminWithdrawalsRoute
   '/dashboard/academy': typeof DashboardAcademyRoute
   '/dashboard/bots': typeof DashboardBotsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
@@ -177,18 +319,34 @@ export interface FileRoutesById {
   '/dashboard/signals': typeof DashboardSignalsRoute
   '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/wallet': typeof DashboardWalletRoute
+  '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/dashboard'
     | '/about'
     | '/contact'
     | '/login'
     | '/pricing'
     | '/services'
+    | '/admin/academy'
+    | '/admin/audit'
+    | '/admin/bots'
+    | '/admin/deposits'
+    | '/admin/notify'
+    | '/admin/payments'
+    | '/admin/pricing'
+    | '/admin/profile'
+    | '/admin/prop-firm'
+    | '/admin/settings'
+    | '/admin/signals'
+    | '/admin/support'
+    | '/admin/users'
+    | '/admin/withdrawals'
     | '/dashboard/academy'
     | '/dashboard/bots'
     | '/dashboard/messages'
@@ -199,6 +357,7 @@ export interface FileRouteTypes {
     | '/dashboard/signals'
     | '/dashboard/support'
     | '/dashboard/wallet'
+    | '/admin/'
     | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -208,6 +367,20 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/services'
+    | '/admin/academy'
+    | '/admin/audit'
+    | '/admin/bots'
+    | '/admin/deposits'
+    | '/admin/notify'
+    | '/admin/payments'
+    | '/admin/pricing'
+    | '/admin/profile'
+    | '/admin/prop-firm'
+    | '/admin/settings'
+    | '/admin/signals'
+    | '/admin/support'
+    | '/admin/users'
+    | '/admin/withdrawals'
     | '/dashboard/academy'
     | '/dashboard/bots'
     | '/dashboard/messages'
@@ -218,16 +391,32 @@ export interface FileRouteTypes {
     | '/dashboard/signals'
     | '/dashboard/support'
     | '/dashboard/wallet'
+    | '/admin'
     | '/dashboard'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/dashboard'
     | '/about'
     | '/contact'
     | '/login'
     | '/pricing'
     | '/services'
+    | '/admin/academy'
+    | '/admin/audit'
+    | '/admin/bots'
+    | '/admin/deposits'
+    | '/admin/notify'
+    | '/admin/payments'
+    | '/admin/pricing'
+    | '/admin/profile'
+    | '/admin/prop-firm'
+    | '/admin/settings'
+    | '/admin/signals'
+    | '/admin/support'
+    | '/admin/users'
+    | '/admin/withdrawals'
     | '/dashboard/academy'
     | '/dashboard/bots'
     | '/dashboard/messages'
@@ -238,11 +427,13 @@ export interface FileRouteTypes {
     | '/dashboard/signals'
     | '/dashboard/support'
     | '/dashboard/wallet'
+    | '/admin/'
     | '/dashboard/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
   DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   ContactRoute: typeof ContactRoute
@@ -295,6 +486,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -308,6 +506,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
     '/dashboard/wallet': {
       id: '/dashboard/wallet'
@@ -379,8 +584,146 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAcademyRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/admin/withdrawals': {
+      id: '/admin/withdrawals'
+      path: '/withdrawals'
+      fullPath: '/admin/withdrawals'
+      preLoaderRoute: typeof AdminWithdrawalsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/support': {
+      id: '/admin/support'
+      path: '/support'
+      fullPath: '/admin/support'
+      preLoaderRoute: typeof AdminSupportRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/signals': {
+      id: '/admin/signals'
+      path: '/signals'
+      fullPath: '/admin/signals'
+      preLoaderRoute: typeof AdminSignalsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/prop-firm': {
+      id: '/admin/prop-firm'
+      path: '/prop-firm'
+      fullPath: '/admin/prop-firm'
+      preLoaderRoute: typeof AdminPropFirmRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/profile': {
+      id: '/admin/profile'
+      path: '/profile'
+      fullPath: '/admin/profile'
+      preLoaderRoute: typeof AdminProfileRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/pricing': {
+      id: '/admin/pricing'
+      path: '/pricing'
+      fullPath: '/admin/pricing'
+      preLoaderRoute: typeof AdminPricingRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/notify': {
+      id: '/admin/notify'
+      path: '/notify'
+      fullPath: '/admin/notify'
+      preLoaderRoute: typeof AdminNotifyRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/deposits': {
+      id: '/admin/deposits'
+      path: '/deposits'
+      fullPath: '/admin/deposits'
+      preLoaderRoute: typeof AdminDepositsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/bots': {
+      id: '/admin/bots'
+      path: '/bots'
+      fullPath: '/admin/bots'
+      preLoaderRoute: typeof AdminBotsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/academy': {
+      id: '/admin/academy'
+      path: '/academy'
+      fullPath: '/admin/academy'
+      preLoaderRoute: typeof AdminAcademyRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
   }
 }
+
+interface AdminRouteRouteChildren {
+  AdminAcademyRoute: typeof AdminAcademyRoute
+  AdminAuditRoute: typeof AdminAuditRoute
+  AdminBotsRoute: typeof AdminBotsRoute
+  AdminDepositsRoute: typeof AdminDepositsRoute
+  AdminNotifyRoute: typeof AdminNotifyRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminPricingRoute: typeof AdminPricingRoute
+  AdminProfileRoute: typeof AdminProfileRoute
+  AdminPropFirmRoute: typeof AdminPropFirmRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminSignalsRoute: typeof AdminSignalsRoute
+  AdminSupportRoute: typeof AdminSupportRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminWithdrawalsRoute: typeof AdminWithdrawalsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminAcademyRoute: AdminAcademyRoute,
+  AdminAuditRoute: AdminAuditRoute,
+  AdminBotsRoute: AdminBotsRoute,
+  AdminDepositsRoute: AdminDepositsRoute,
+  AdminNotifyRoute: AdminNotifyRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminPricingRoute: AdminPricingRoute,
+  AdminProfileRoute: AdminProfileRoute,
+  AdminPropFirmRoute: AdminPropFirmRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminSignalsRoute: AdminSignalsRoute,
+  AdminSupportRoute: AdminSupportRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminWithdrawalsRoute: AdminWithdrawalsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
 
 interface DashboardRouteRouteChildren {
   DashboardAcademyRoute: typeof DashboardAcademyRoute
@@ -416,6 +759,7 @@ const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
   DashboardRouteRoute: DashboardRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   ContactRoute: ContactRoute,

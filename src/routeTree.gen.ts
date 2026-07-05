@@ -18,6 +18,7 @@ import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as DashboardWalletRouteImport } from './routes/dashboard/wallet'
 import { Route as DashboardSupportRouteImport } from './routes/dashboard/support'
 import { Route as DashboardSignalsRouteImport } from './routes/dashboard/signals'
@@ -28,6 +29,7 @@ import { Route as DashboardProfileRouteImport } from './routes/dashboard/profile
 import { Route as DashboardMessagesRouteImport } from './routes/dashboard/messages'
 import { Route as DashboardBotsRouteImport } from './routes/dashboard/bots'
 import { Route as DashboardAcademyRouteImport } from './routes/dashboard/academy'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
 
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
@@ -73,6 +75,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardRouteRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 const DashboardWalletRoute = DashboardWalletRouteImport.update({
   id: '/wallet',
@@ -124,16 +131,22 @@ const DashboardAcademyRoute = DashboardAcademyRouteImport.update({
   path: '/academy',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/services': typeof ServicesRoute
+  '/admin/users': typeof AdminUsersRoute
   '/dashboard/academy': typeof DashboardAcademyRoute
   '/dashboard/bots': typeof DashboardBotsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
@@ -144,16 +157,17 @@ export interface FileRoutesByFullPath {
   '/dashboard/signals': typeof DashboardSignalsRoute
   '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/wallet': typeof DashboardWalletRoute
+  '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/services': typeof ServicesRoute
+  '/admin/users': typeof AdminUsersRoute
   '/dashboard/academy': typeof DashboardAcademyRoute
   '/dashboard/bots': typeof DashboardBotsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
@@ -164,18 +178,20 @@ export interface FileRoutesByTo {
   '/dashboard/signals': typeof DashboardSignalsRoute
   '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/wallet': typeof DashboardWalletRoute
+  '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/services': typeof ServicesRoute
+  '/admin/users': typeof AdminUsersRoute
   '/dashboard/academy': typeof DashboardAcademyRoute
   '/dashboard/bots': typeof DashboardBotsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
@@ -186,6 +202,7 @@ export interface FileRoutesById {
   '/dashboard/signals': typeof DashboardSignalsRoute
   '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/wallet': typeof DashboardWalletRoute
+  '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRouteTypes {
@@ -199,6 +216,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/services'
+    | '/admin/users'
     | '/dashboard/academy'
     | '/dashboard/bots'
     | '/dashboard/messages'
@@ -209,16 +227,17 @@ export interface FileRouteTypes {
     | '/dashboard/signals'
     | '/dashboard/support'
     | '/dashboard/wallet'
+    | '/admin/'
     | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
     | '/about'
     | '/contact'
     | '/login'
     | '/pricing'
     | '/services'
+    | '/admin/users'
     | '/dashboard/academy'
     | '/dashboard/bots'
     | '/dashboard/messages'
@@ -229,6 +248,7 @@ export interface FileRouteTypes {
     | '/dashboard/signals'
     | '/dashboard/support'
     | '/dashboard/wallet'
+    | '/admin'
     | '/dashboard'
   id:
     | '__root__'
@@ -240,6 +260,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/services'
+    | '/admin/users'
     | '/dashboard/academy'
     | '/dashboard/bots'
     | '/dashboard/messages'
@@ -250,12 +271,13 @@ export interface FileRouteTypes {
     | '/dashboard/signals'
     | '/dashboard/support'
     | '/dashboard/wallet'
+    | '/admin/'
     | '/dashboard/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRouteRoute: typeof AdminRouteRoute
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
   DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   ContactRoute: typeof ContactRoute
@@ -329,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/dashboard/wallet': {
       id: '/dashboard/wallet'
       path: '/wallet'
@@ -399,8 +428,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAcademyRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
   }
 }
+
+interface AdminRouteRouteChildren {
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminUsersRoute: AdminUsersRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
 
 interface DashboardRouteRouteChildren {
   DashboardAcademyRoute: typeof DashboardAcademyRoute
@@ -436,7 +486,7 @@ const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRouteRoute: AdminRouteRoute,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
   DashboardRouteRoute: DashboardRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   ContactRoute: ContactRoute,

@@ -37,11 +37,12 @@ function AuthPage() {
       }
       const session = signIn(email, password);
       if (!session) {
-        setError("Invalid credentials. Use demo@gmail.com / demo123");
+        setError("Invalid credentials. Use demo@gmail.com / demo123 or admin@gmail.com / admin123");
         return;
       }
       setSuccess(true);
-      setTimeout(() => navigate({ to: "/dashboard" }), 900);
+      const dest = session.role === "admin" ? "/admin" : "/dashboard";
+      setTimeout(() => navigate({ to: dest }), 900);
     }, 800);
   };
 
@@ -133,8 +134,9 @@ function AuthPage() {
                   </div>
 
                   {mode === "login" && (
-                    <div className="mt-5 p-3 rounded-xl border border-brand/20 bg-brand/5 text-[11px] text-muted-foreground">
-                      <span className="text-brand font-medium">Demo:</span> demo@gmail.com / demo123
+                    <div className="mt-5 p-3 rounded-xl border border-brand/20 bg-brand/5 text-[11px] text-muted-foreground space-y-1">
+                      <div><span className="text-brand font-medium">User demo:</span> demo@gmail.com / demo123</div>
+                      <div><span className="text-brand font-medium">Admin demo:</span> admin@gmail.com / admin123</div>
                     </div>
                   )}
                   <form onSubmit={submit} className="mt-4 space-y-4">

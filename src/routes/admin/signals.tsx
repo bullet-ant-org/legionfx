@@ -63,7 +63,7 @@ function SignalsPage() {
         <form onSubmit={(e) => {
           e.preventDefault();
           const fd = new FormData(e.currentTarget);
-          const n: Signal = { id: `sig-${Date.now()}`, pair: String(fd.get("pair")||""), direction: String(fd.get("direction")||"BUY"), entry: Number(fd.get("entry")||0), sl: Number(fd.get("sl")||0), tp: Number(fd.get("tp")||0), confidence: Number(fd.get("confidence")||80), status: "Active", published: true, sent: 5284, hits: 0 };
+          const n: Signal = { id: `sig-${Date.now()}`, pair: String(fd.get("pair")||""), direction: String(fd.get("direction")||"BUY"), entry: Number(fd.get("entry")||0), sl: Number(fd.get("sl")||0), tp: Number(fd.get("tp")||0), confidence: Number(fd.get("confidence")||80), published: true, sent: 5284, hits: 0 };
           setItems([n, ...items]); setAddOpen(false); toast.success("Signal published to 5,284 users");
         }} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">

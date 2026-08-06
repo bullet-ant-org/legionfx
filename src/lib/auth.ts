@@ -1,42 +1,81 @@
-// Simple no-backend demo auth with two roles: user and admin.
-export const DEMO_EMAIL = "demo@gmail.com";
-export const DEMO_PASSWORD = "demo123";
-export const ADMIN_EMAIL = "admin@gmail.com";
-export const ADMIN_PASSWORD = "admin123";
+// Real auth against the LegionFX backend. Session lives in an httpOnly
+// cookie set by the server — this module just calls the API and keeps a
+// small localStorage mirror of the current user for fast UI reads (so route
+// guards don't need to await a network call on every render).
+import { api, ApiError, type ApiUser } from "./api";
+
 const KEY = "legionfx_session";
 
 export type Role = "user" | "admin";
-export type Session = { email: string; name: string; role: Role; signedInAt: number };
+export type Session = { email: string; name: string; role: Role; user: ApiUser };
 
+function toSession(user: ApiUser): Session {
+  return { email: user.email, name: user.name, role: user.role, user };
+}
+
+function persist(session: Session | null) {
+  if (typeof window === "undefined") return;
+  if (session) {
+    window.localStorage.setItem(KEY, JSON.stringify(session));
+  } else {
+    window.localStorage.removeItem(KEY);
+  }
+  window.dispatchEvent(new Event("legionfx-auth"));
+}
+
+/** Synchronous, cached read — good for initial render / route guards. */
 export function getSession(): Session | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(KEY);
     if (!raw) return null;
-    const s = JSON.parse(raw) as Session;
-    // Back-compat: sessions saved before roles existed default to "user".
-    if (!s.role) s.role = "user";
-    return s;
+    return JSON.parse(raw) as Session;
   } catch {
     return null;
   }
 }
 
-export function signIn(email: string, password: string): Session | null {
-  const e = email.trim().toLowerCase();
-  let session: Session | null = null;
-  if (e === DEMO_EMAIL && password === DEMO_PASSWORD) {
-    session = { email: DEMO_EMAIL, name: "Keagan Mitchell", role: "user", signedInAt: Date.now() };
-  } else if (e === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-    session = { email: ADMIN_EMAIL, name: "LEGIONFX Admin", role: "admin", signedInAt: Date.now() };
+/** Authoritative check against the backend. Call on app load to validate/refresh the cached session. */
+export async function refreshSession(): Promise<Session | null> {
+  try {
+    const { user } = await api.me();
+    const session = toSession(user);
+    persist(session);
+    return session;
+  } catch {
+    persist(null);
+    return null;
   }
-  if (!session) return null;
-  window.localStorage.setItem(KEY, JSON.stringify(session));
-  window.dispatchEvent(new Event("legionfx-auth"));
-  return session;
 }
 
-export function signOut() {
-  window.localStorage.removeItem(KEY);
-  window.dispatchEvent(new Event("legionfx-auth"));
+export async function signIn(email: string, password: string): Promise<{ session: Session | null; error: string | null }> {
+  try {
+    const { user } = await api.login(email, password);
+    const session = toSession(user);
+    persist(session);
+    return { session, error: null };
+  } catch (err) {
+    const message = err instanceof ApiError ? err.message : "Unable to reach the server. Please try again.";
+    return { session: null, error: message };
+  }
+}
+
+export async function signUp(name: string, email: string, password: string): Promise<{ session: Session | null; error: string | null }> {
+  try {
+    const { user } = await api.signup(name, email, password);
+    const session = toSession(user);
+    persist(session);
+    return { session, error: null };
+  } catch (err) {
+    const message = err instanceof ApiError ? err.message : "Unable to reach the server. Please try again.";
+    return { session: null, error: message };
+  }
+}
+
+export async function signOut() {
+  try {
+    await api.logout();
+  } finally {
+    persist(null);
+  }
 }

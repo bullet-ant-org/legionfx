@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Topbar } from "@/components/dashboard/Topbar";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/lib/theme";
-import { getSession } from "@/lib/auth";
+import { getSession, refreshSession } from "@/lib/auth";
 
 export const Route = createFileRoute("/dashboard")({
   ssr: false,
@@ -24,6 +24,9 @@ function DashboardLayout() {
       return;
     }
     setReady(true);
+    // Confirm the cached session is still valid against the backend (cookie
+    // may have expired or been revoked server-side).
+    refreshSession().then((s) => { if (!s) navigate({ to: "/login" }); });
     const onAuth = () => { if (!getSession()) navigate({ to: "/login" }); };
     window.addEventListener("legionfx-auth", onAuth);
     return () => window.removeEventListener("legionfx-auth", onAuth);

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, User, Shield, Zap, Globe, ArrowRight, Check, X } from "lucide-react";
-import { signIn, DEMO_EMAIL, DEMO_PASSWORD } from "@/lib/auth";
+import { signIn, signUp } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -20,30 +20,44 @@ function AuthPage() {
   const [forgot, setForgot] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [email, setEmail] = useState(DEMO_EMAIL);
-  const [password, setPassword] = useState(DEMO_PASSWORD);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      if (mode === "signup") {
-        setSuccess(true);
-        setTimeout(() => navigate({ to: "/login" }), 1400);
+
+    if (mode === "signup") {
+      if (password !== confirmPassword) {
+        setError("Passwords do not match.");
         return;
       }
-      const session = signIn(email, password);
+      setLoading(true);
+      const { session, error: signupError } = await signUp(name, email, password);
+      setLoading(false);
       if (!session) {
-        setError("Invalid credentials. Use demo@gmail.com / demo123 or admin@gmail.com / admin123");
+        setError(signupError || "Unable to create account.");
         return;
       }
       setSuccess(true);
       const dest = session.role === "admin" ? "/admin" : "/dashboard";
       setTimeout(() => navigate({ to: dest }), 900);
-    }, 800);
+      return;
+    }
+
+    setLoading(true);
+    const { session, error: loginError } = await signIn(email, password);
+    setLoading(false);
+    if (!session) {
+      setError(loginError || "Invalid credentials.");
+      return;
+    }
+    setSuccess(true);
+    const dest = session.role === "admin" ? "/admin" : "/dashboard";
+    setTimeout(() => navigate({ to: dest }), 900);
   };
 
   return (
@@ -133,15 +147,9 @@ function AuthPage() {
                     ))}
                   </div>
 
-                  {mode === "login" && (
-                    <div className="mt-5 p-3 rounded-xl border border-brand/20 bg-brand/5 text-[11px] text-muted-foreground space-y-1">
-                      <div><span className="text-brand font-medium">User demo:</span> demo@gmail.com / demo123</div>
-                      <div><span className="text-brand font-medium">Admin demo:</span> admin@gmail.com / admin123</div>
-                    </div>
-                  )}
-                  <form onSubmit={submit} className="mt-4 space-y-4">
+                  <form onSubmit={submit} className="mt-6 space-y-4">
                     {mode === "signup" && (
-                      <InputField icon={User} label="Full Name" type="text" required />
+                      <InputField icon={User} label="Full Name" type="text" required value={name} onChange={(v) => setName(v)} />
                     )}
                     <InputField icon={Mail} label="Email Address" type="email" required value={email} onChange={(v) => setEmail(v)} />
                     <InputField
@@ -158,7 +166,7 @@ function AuthPage() {
                       }
                     />
                     {mode === "signup" && (
-                      <InputField icon={Lock} label="Confirm Password" type={showPass ? "text" : "password"} required />
+                      <InputField icon={Lock} label="Confirm Password" type={showPass ? "text" : "password"} required value={confirmPassword} onChange={(v) => setConfirmPassword(v)} />
                     )}
 
                     {error && <div className="text-xs text-rose-400 px-1">{error}</div>}

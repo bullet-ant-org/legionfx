@@ -5,7 +5,7 @@ import { AdminSidebar } from "@/components/admin/Sidebar";
 import { AdminTopbar } from "@/components/admin/Topbar";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/lib/theme";
-import { getSession } from "@/lib/auth";
+import { getSession, refreshSession } from "@/lib/auth";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
@@ -23,6 +23,12 @@ function AdminLayout() {
     if (!s) { navigate({ to: "/login" }); return; }
     if (s.role !== "admin") { navigate({ to: "/dashboard" }); return; }
     setReady(true);
+    // Confirm the cached session is still valid against the backend (cookie
+    // may have expired or been revoked server-side).
+    refreshSession().then((cur) => {
+      if (!cur) navigate({ to: "/login" });
+      else if (cur.role !== "admin") navigate({ to: "/dashboard" });
+    });
     const onAuth = () => {
       const cur = getSession();
       if (!cur) navigate({ to: "/login" });

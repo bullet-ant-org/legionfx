@@ -376,54 +376,41 @@ function AssetCard({ icon, title, primary, secondary, actions }: {
 }
 
 function DepositModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [step, setStep] = useState<"form" | "done">("form");
-  const [method, setMethod] = useState("USDT (TRC20)");
+  const navigate = useNavigate();
   const [amount, setAmount] = useState("500");
-  const submit = (e: React.FormEvent) => { e.preventDefault(); setStep("done"); };
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const value = Math.max(10, Number(amount) || 0);
+    startPaySession(value);
+    onClose();
+    navigate({ to: "/pay", search: { amount: value } });
+  };
   return (
-    <Modal open={open} onClose={() => { setStep("form"); onClose(); }} title="Deposit Funds" size="lg">
-      {step === "form" ? (
-        <form onSubmit={submit} className="space-y-4">
-          <Field label="Payment Method">
-            <select value={method} onChange={(e) => setMethod(e.target.value)} className={inputCls}>
-              {["Bank Transfer", "USDT (TRC20)", "USDT (ERC20)", "Bitcoin", "Ethereum", "Card Payment"].map((m) => <option key={m}>{m}</option>)}
-            </select>
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Amount (USD)"><input type="number" min="10" value={amount} onChange={(e) => setAmount(e.target.value)} className={inputCls} /></Field>
-            <Field label="Promo Code"><input type="text" placeholder="Optional" className={inputCls} /></Field>
-          </div>
-          <div className="glass rounded-xl p-3 text-xs space-y-1.5">
-            <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span>${amount}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Processing Fee</span><span>$0.00</span></div>
-            <div className="flex justify-between font-semibold pt-1.5 border-t border-white/5"><span>You receive</span><span className="text-brand">${amount}</span></div>
-          </div>
-          <button type="submit" className="w-full py-3 rounded-xl brand-gradient text-brand-foreground text-sm font-medium">Continue</button>
-        </form>
-      ) : (
-        <div className="space-y-4">
-          <div className="text-center py-2">
-            <div className="h-14 w-14 mx-auto rounded-full brand-gradient grid place-items-center text-brand-foreground shadow-glow"><Check size={26} /></div>
-            <h4 className="mt-4 font-semibold">Payment Instructions</h4>
-            <p className="text-xs text-muted-foreground mt-1">Send exactly <span className="text-brand font-medium">${amount}</span> via {method}</p>
-          </div>
-          <div className="glass rounded-xl p-4 grid place-items-center">
-            <div className="h-32 w-32 grid-bg rounded-lg border border-white/10" />
-            <div className="mt-3 text-[10px] text-muted-foreground">Scan QR or copy address</div>
-          </div>
-          <div className="flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 p-2 pl-3">
-            <div className="text-[10px] truncate flex-1">TX8a4ce91f2bd8420a91c5e1...</div>
-            <button className="px-2 py-1 rounded-lg brand-gradient text-brand-foreground text-[10px] font-medium"><Copy size={10} /></button>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <button onClick={() => { setStep("form"); onClose(); }} className="py-2.5 rounded-xl glass hover:bg-white/10 text-sm">Cancel</button>
-            <button onClick={() => { setStep("form"); onClose(); }} className="py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium">Done</button>
-          </div>
+    <Modal open={open} onClose={onClose} title="Deposit Funds" size="lg">
+      <form onSubmit={submit} className="space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Amount (USD)"><input type="number" min="10" value={amount} onChange={(e) => setAmount(e.target.value)} className={inputCls} /></Field>
+          <Field label="Promo Code"><input type="text" placeholder="Optional" className={inputCls} /></Field>
         </div>
-      )}
+        <div className="flex flex-wrap gap-2">
+          {[100, 500, 1000, 5000].map((v) => (
+            <button key={v} type="button" data-no-toast onClick={() => setAmount(String(v))} className="px-3 py-1.5 rounded-lg border border-border text-xs hover:bg-foreground/5">${v.toLocaleString()}</button>
+          ))}
+        </div>
+        <div className="glass rounded-xl p-3 text-xs space-y-1.5">
+          <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span>${amount}</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">Processing Fee</span><span>$0.00</span></div>
+          <div className="flex justify-between font-semibold pt-1.5 border-t border-white/5"><span>You receive</span><span className="text-brand">${amount}</span></div>
+        </div>
+        <p className="text-[11px] text-muted-foreground">
+          You'll be taken to the secure RexaPay checkout to choose a payment method.
+        </p>
+        <button type="submit" className="w-full py-3 rounded-xl brand-gradient text-brand-foreground text-sm font-medium">Continue to RexaPay</button>
+      </form>
     </Modal>
   );
 }
+
 
 function WithdrawModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [done, setDone] = useState(false);

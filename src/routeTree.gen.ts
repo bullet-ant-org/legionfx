@@ -40,6 +40,7 @@ import { Route as AdminPricingRouteImport } from './routes/admin/pricing'
 import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
 import { Route as AdminNotifyRouteImport } from './routes/admin/notify'
 import { Route as AdminDepositsRouteImport } from './routes/admin/deposits'
+import { Route as AdminDepositMethodsRouteImport } from './routes/admin/deposit-methods'
 import { Route as AdminBotsRouteImport } from './routes/admin/bots'
 import { Route as AdminAuditRouteImport } from './routes/admin/audit'
 import { Route as AdminAcademyRouteImport } from './routes/admin/academy'
@@ -199,6 +200,11 @@ const AdminDepositsRoute = AdminDepositsRouteImport.update({
   path: '/deposits',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminDepositMethodsRoute = AdminDepositMethodsRouteImport.update({
+  id: '/deposit-methods',
+  path: '/deposit-methods',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminBotsRoute = AdminBotsRouteImport.update({
   id: '/bots',
   path: '/bots',
@@ -227,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/admin/academy': typeof AdminAcademyRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bots': typeof AdminBotsRoute
+  '/admin/deposit-methods': typeof AdminDepositMethodsRoute
   '/admin/deposits': typeof AdminDepositsRoute
   '/admin/notify': typeof AdminNotifyRoute
   '/admin/payments': typeof AdminPaymentsRoute
@@ -261,6 +268,7 @@ export interface FileRoutesByTo {
   '/admin/academy': typeof AdminAcademyRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bots': typeof AdminBotsRoute
+  '/admin/deposit-methods': typeof AdminDepositMethodsRoute
   '/admin/deposits': typeof AdminDepositsRoute
   '/admin/notify': typeof AdminNotifyRoute
   '/admin/payments': typeof AdminPaymentsRoute
@@ -298,6 +306,7 @@ export interface FileRoutesById {
   '/admin/academy': typeof AdminAcademyRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bots': typeof AdminBotsRoute
+  '/admin/deposit-methods': typeof AdminDepositMethodsRoute
   '/admin/deposits': typeof AdminDepositsRoute
   '/admin/notify': typeof AdminNotifyRoute
   '/admin/payments': typeof AdminPaymentsRoute
@@ -336,6 +345,7 @@ export interface FileRouteTypes {
     | '/admin/academy'
     | '/admin/audit'
     | '/admin/bots'
+    | '/admin/deposit-methods'
     | '/admin/deposits'
     | '/admin/notify'
     | '/admin/payments'
@@ -370,6 +380,7 @@ export interface FileRouteTypes {
     | '/admin/academy'
     | '/admin/audit'
     | '/admin/bots'
+    | '/admin/deposit-methods'
     | '/admin/deposits'
     | '/admin/notify'
     | '/admin/payments'
@@ -406,6 +417,7 @@ export interface FileRouteTypes {
     | '/admin/academy'
     | '/admin/audit'
     | '/admin/bots'
+    | '/admin/deposit-methods'
     | '/admin/deposits'
     | '/admin/notify'
     | '/admin/payments'
@@ -661,6 +673,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDepositsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/deposit-methods': {
+      id: '/admin/deposit-methods'
+      path: '/deposit-methods'
+      fullPath: '/admin/deposit-methods'
+      preLoaderRoute: typeof AdminDepositMethodsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/bots': {
       id: '/admin/bots'
       path: '/bots'
@@ -689,6 +708,7 @@ interface AdminRouteRouteChildren {
   AdminAcademyRoute: typeof AdminAcademyRoute
   AdminAuditRoute: typeof AdminAuditRoute
   AdminBotsRoute: typeof AdminBotsRoute
+  AdminDepositMethodsRoute: typeof AdminDepositMethodsRoute
   AdminDepositsRoute: typeof AdminDepositsRoute
   AdminNotifyRoute: typeof AdminNotifyRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
@@ -707,6 +727,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminAcademyRoute: AdminAcademyRoute,
   AdminAuditRoute: AdminAuditRoute,
   AdminBotsRoute: AdminBotsRoute,
+  AdminDepositMethodsRoute: AdminDepositMethodsRoute,
   AdminDepositsRoute: AdminDepositsRoute,
   AdminNotifyRoute: AdminNotifyRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,

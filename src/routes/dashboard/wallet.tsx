@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { startPaySession } from "@/lib/deposit-methods";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {

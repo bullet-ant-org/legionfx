@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   LayoutDashboard, Users, ArrowDownToLine, ArrowUpFromLine, Bell, CreditCard,
   Tags, Settings, User2, ChevronsLeft, ChevronsRight, LogOut, X, ShieldCheck,
-  Bot, GraduationCap, Trophy, LineChart, LifeBuoy, FileText,
+  Bot, GraduationCap, Trophy, LineChart, LifeBuoy, FileText, Coins,
 } from "lucide-react";
 import { signOut } from "@/lib/auth";
 import { Modal } from "@/components/dashboard/primitives";

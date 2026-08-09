@@ -22,6 +22,7 @@ import { Route as PayIndexRouteImport } from './routes/pay/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as PayProcessingRouteImport } from './routes/pay/processing'
+import { Route as PayFailedRouteImport } from './routes/pay/failed'
 import { Route as PayCryptoRouteImport } from './routes/pay/crypto'
 import { Route as DashboardWalletRouteImport } from './routes/dashboard/wallet'
 import { Route as DashboardSupportRouteImport } from './routes/dashboard/support'
@@ -113,6 +114,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const PayProcessingRoute = PayProcessingRouteImport.update({
   id: '/processing',
   path: '/processing',
+  getParentRoute: () => PayRouteRoute,
+} as any)
+const PayFailedRoute = PayFailedRouteImport.update({
+  id: '/failed',
+  path: '/failed',
   getParentRoute: () => PayRouteRoute,
 } as any)
 const PayCryptoRoute = PayCryptoRouteImport.update({
@@ -287,6 +293,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/wallet': typeof DashboardWalletRoute
   '/pay/crypto': typeof PayCryptoRoute
+  '/pay/failed': typeof PayFailedRoute
   '/pay/processing': typeof PayProcessingRoute
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -326,6 +333,7 @@ export interface FileRoutesByTo {
   '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/wallet': typeof DashboardWalletRoute
   '/pay/crypto': typeof PayCryptoRoute
+  '/pay/failed': typeof PayFailedRoute
   '/pay/processing': typeof PayProcessingRoute
   '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
@@ -369,6 +377,7 @@ export interface FileRoutesById {
   '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/wallet': typeof DashboardWalletRoute
   '/pay/crypto': typeof PayCryptoRoute
+  '/pay/failed': typeof PayFailedRoute
   '/pay/processing': typeof PayProcessingRoute
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -413,6 +422,7 @@ export interface FileRouteTypes {
     | '/dashboard/support'
     | '/dashboard/wallet'
     | '/pay/crypto'
+    | '/pay/failed'
     | '/pay/processing'
     | '/admin/'
     | '/dashboard/'
@@ -452,6 +462,7 @@ export interface FileRouteTypes {
     | '/dashboard/support'
     | '/dashboard/wallet'
     | '/pay/crypto'
+    | '/pay/failed'
     | '/pay/processing'
     | '/admin'
     | '/dashboard'
@@ -494,6 +505,7 @@ export interface FileRouteTypes {
     | '/dashboard/support'
     | '/dashboard/wallet'
     | '/pay/crypto'
+    | '/pay/failed'
     | '/pay/processing'
     | '/admin/'
     | '/dashboard/'
@@ -604,6 +616,13 @@ declare module '@tanstack/react-router' {
       path: '/processing'
       fullPath: '/pay/processing'
       preLoaderRoute: typeof PayProcessingRouteImport
+      parentRoute: typeof PayRouteRoute
+    }
+    '/pay/failed': {
+      id: '/pay/failed'
+      path: '/failed'
+      fullPath: '/pay/failed'
+      preLoaderRoute: typeof PayFailedRouteImport
       parentRoute: typeof PayRouteRoute
     }
     '/pay/crypto': {
@@ -874,6 +893,7 @@ const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
 
 interface PayRouteRouteChildren {
   PayCryptoRoute: typeof PayCryptoRoute
+  PayFailedRoute: typeof PayFailedRoute
   PayProcessingRoute: typeof PayProcessingRoute
   PayIndexRoute: typeof PayIndexRoute
   PayUnavailableMethodRoute: typeof PayUnavailableMethodRoute
@@ -881,6 +901,7 @@ interface PayRouteRouteChildren {
 
 const PayRouteRouteChildren: PayRouteRouteChildren = {
   PayCryptoRoute: PayCryptoRoute,
+  PayFailedRoute: PayFailedRoute,
   PayProcessingRoute: PayProcessingRoute,
   PayIndexRoute: PayIndexRoute,
   PayUnavailableMethodRoute: PayUnavailableMethodRoute,

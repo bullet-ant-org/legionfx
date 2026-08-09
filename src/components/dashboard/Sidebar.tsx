@@ -6,8 +6,8 @@ import {
   Settings, ShieldCheck, LifeBuoy, User2, ChevronDown, ChevronsLeft, ChevronsRight,
   LogOut, X,
 } from "lucide-react";
-import { user, wallet, propFirm, activeBots } from "@/lib/demo-data";
 import { signOut } from "@/lib/auth";
+import { useDashboardData } from "@/lib/dashboard-data";
 import { Modal } from "./primitives";
 
 const nav = [
@@ -38,6 +38,14 @@ export function Sidebar({
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [accordion, setAccordion] = useState(true);
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const { session, wallet, bots, challenges } = useDashboardData();
+
+  const name = session?.name || "Trader";
+  const email = session?.email || "";
+  const initials = name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase() || "U";
+  const runningBots = bots.filter((b) => b.status === "Running").length;
+  const botProfit = bots.reduce((a, b) => a + (b.profit || 0), 0);
+  const primaryChallenge = challenges[0] ?? null;
 
   const inner = (
     <div className="flex flex-col h-full">
@@ -69,13 +77,13 @@ export function Sidebar({
           className={`w-full glass rounded-2xl p-3 flex items-center gap-3 hover:bg-white/5 transition ${collapsed ? "justify-center" : ""}`}
         >
           <div className="h-10 w-10 rounded-xl brand-gradient grid place-items-center font-semibold text-brand-foreground shrink-0">
-            {user.initials}
+            {initials}
           </div>
           {!collapsed && (
             <>
               <div className="min-w-0 text-left flex-1">
-                <div className="text-sm font-medium truncate">{user.name}</div>
-                <div className="text-[10px] text-muted-foreground truncate">{user.email}</div>
+                <div className="text-sm font-medium truncate">{name}</div>
+                <div className="text-[10px] text-muted-foreground truncate">{email}</div>
               </div>
               <ChevronDown size={14} className={`text-muted-foreground transition ${accordion ? "rotate-180" : ""}`} />
             </>
@@ -91,12 +99,12 @@ export function Sidebar({
               className="overflow-hidden"
             >
               <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
-                <Stat label="Wallet" value={`$${wallet.available.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} />
-                <Stat label="Bots Active" value={`${activeBots.filter((b) => b.status === "Running").length} Running`} />
-                <Stat label="Bot Profit" value={`+$${activeBots.reduce((a, b) => a + b.profit, 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}`} accent />
-                <Stat label="Prop Firm" value={`${propFirm.size / 1000}K · ${propFirm.phase}`} />
-                <Stat label="Completion" value={`${propFirm.completion}%`} accent />
-                <Stat label="Plan" value={`${user.plan} · ${user.status}`} />
+                <Stat label="Wallet" value={`$${(wallet?.available ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}`} />
+                <Stat label="Bots Active" value={`${runningBots} Running`} />
+                <Stat label="Bot Profit" value={`+$${botProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} accent />
+                <Stat label="Prop Firm" value={primaryChallenge ? `${primaryChallenge.size / 1000}K · ${primaryChallenge.phase}` : "None active"} />
+                <Stat label="Completion" value={primaryChallenge ? `${primaryChallenge.completion}%` : "—"} accent />
+                <Stat label="Plan" value={`${session?.user?.plan ?? "Starter"} · ${session?.user?.status ?? "Active"}`} />
               </div>
             </motion.div>
           )}
@@ -160,7 +168,7 @@ export function Sidebar({
         <div className="mt-5 grid grid-cols-2 gap-3">
           <button onClick={() => setLogoutOpen(false)} className="py-2.5 rounded-xl glass hover:bg-white/10 text-sm">Cancel</button>
           <button
-            onClick={() => { signOut(); window.location.href = "/login"; }}
+            onClick={async () => { await signOut(); window.location.href = "/login"; }}
             className="py-2.5 rounded-xl bg-rose-500/90 hover:bg-rose-500 text-white text-sm font-medium"
           >
             Log out

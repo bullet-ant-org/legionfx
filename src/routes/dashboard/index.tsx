@@ -10,9 +10,9 @@ import {
   Sparkles, Calendar as CalIcon, MessageSquare, Award, Users, Pause, Settings,
 } from "lucide-react";
 import { StatCard, GlassCard, SectionTitle, Counter, StatusPill } from "@/components/dashboard/primitives";
+import { useDashboardData } from "@/lib/dashboard-data";
 import {
-  user, quickStats, performance, activeBots, propFirm, academy, signals,
-  transactions, calendar, market, messages, achievements, referral, wallet,
+  performance, academy, calendar, market, messages, achievements, referral,
 } from "@/lib/demo-data";
 
 export const Route = createFileRoute("/dashboard/")({
@@ -24,6 +24,8 @@ type Range = "Daily" | "Weekly" | "Monthly" | "Yearly";
 
 function OverviewPage() {
   const [range, setRange] = useState<Range>("Monthly");
+  const { loading, error, session, wallet, bots, challenges, enrollments, signals, transactions } = useDashboardData();
+
   const data = useMemo(() => {
     const map = { Daily: performance.daily, Weekly: performance.weekly, Monthly: performance.monthly, Yearly: performance.yearly };
     return map[range];
@@ -34,8 +36,29 @@ function OverviewPage() {
     return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
   }, []);
 
+  const firstName = (session?.name || "Trader").split(" ")[0];
+  const plan = session?.user?.plan || "Starter";
+  const lastLogin = session?.user?.lastLogin ? new Date(session.user.lastLogin as string).toLocaleString(undefined, { hour: "numeric", minute: "2-digit" }) : "—";
+
+  const runningBots = bots.filter((b) => b.status === "Running").length;
+  const totalBotProfit = bots.reduce((a, b) => a + (b.profit || 0), 0);
+  const primaryChallenge = challenges[0] ?? null;
+  const primaryEnrollment = enrollments[0] ?? null;
+
+  const quickStats = [
+    { label: "Wallet Balance", value: wallet?.available ?? 0, prefix: "$", delta: undefined, trend: "up" as const },
+    { label: "Total Deposits", value: wallet?.totalDeposits ?? 0, prefix: "$", delta: undefined, trend: "up" as const },
+    { label: "Total Profit", value: wallet?.totalProfit ?? 0, prefix: "$", delta: undefined, trend: (wallet?.totalProfit ?? 0) >= 0 ? "up" as const : "down" as const },
+    { label: "Active Bots", value: runningBots, prefix: "", delta: undefined, trend: "up" as const },
+  ];
+
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="rounded-2xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-xs text-rose-300">
+          {error}
+        </div>
+      )}
       {/* Welcome */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="glass-strong rounded-3xl p-6 md:p-8 relative overflow-hidden">
         <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-brand/20 blur-3xl" />
@@ -44,23 +67,27 @@ function OverviewPage() {
           <div>
             <div className="text-xs text-muted-foreground">{greeting},</div>
             <h1 className="text-2xl md:text-4xl font-bold tracking-tight mt-1">
-              {user.firstName} <span className="inline-block animate-float">👋</span>
+              {firstName} <span className="inline-block animate-float">👋</span>
             </h1>
             <p className="mt-2 text-sm text-muted-foreground max-w-md">Welcome back to LEGIONFX. Here's a snapshot of your trading universe today.</p>
           </div>
           <div className="grid grid-cols-3 gap-2 md:gap-3 text-xs">
-            <Pill label="Plan" value={user.plan} />
-            <Pill label="Streak" value={`${user.streakDays} Days`} />
-            <Pill label="Last login" value="Today 8:15 AM" />
+            <Pill label="Plan" value={plan} />
+            <Pill label="Bots" value={`${runningBots} Running`} />
+            <Pill label="Last login" value={lastLogin} />
           </div>
         </div>
       </motion.div>
 
       {/* Quick stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        {quickStats.map((s, i) => (
-          <StatCard key={i} label={s.label} value={s.value} prefix={s.prefix} suffix={s.suffix} delta={s.delta} trend={s.trend} />
-        ))}
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-24 rounded-2xl glass animate-pulse" />)
+        ) : (
+          quickStats.map((s, i) => (
+            <StatCard key={i} label={s.label} value={s.value} prefix={s.prefix} trend={s.trend} />
+          ))
+        )}
       </div>
 
       {/* Portfolio performance + Wallet summary */}
@@ -99,10 +126,10 @@ function OverviewPage() {
         <GlassCard className="p-5">
           <SectionTitle title="Wallet Summary" />
           <div className="space-y-3">
-            <WalletRow icon={<WalletIcon size={14} />} label="Available" value={wallet.available} />
-            <WalletRow icon={<ArrowUpFromLine size={14} />} label="Pending Withdrawals" value={wallet.pendingWithdrawals} />
-            <WalletRow icon={<ArrowDownToLine size={14} />} label="Total Deposits" value={wallet.totalDeposits} />
-            <WalletRow icon={<Sparkles size={14} />} label="Bonus" value={wallet.bonusBalance} />
+            <WalletRow icon={<WalletIcon size={14} />} label="Available" value={wallet?.available ?? 0} />
+            <WalletRow icon={<ArrowUpFromLine size={14} />} label="Pending Withdrawals" value={wallet?.pendingWithdrawals ?? 0} />
+            <WalletRow icon={<ArrowDownToLine size={14} />} label="Total Deposits" value={wallet?.totalDeposits ?? 0} />
+            <WalletRow icon={<Sparkles size={14} />} label="Bonus" value={wallet?.bonusBalance ?? 0} />
           </div>
           <div className="mt-4 grid grid-cols-3 gap-2">
             <Link to="/dashboard/wallet" className="py-2 text-xs text-center rounded-xl brand-gradient text-brand-foreground font-medium">Deposit</Link>
@@ -120,75 +147,89 @@ function OverviewPage() {
             subtitle="Real-time performance from your automation"
             action={<Link to="/dashboard/bots" className="text-xs text-brand hover:underline inline-flex items-center gap-1">View all <ChevronRight size={12} /></Link>}
           />
-          <div className="grid md:grid-cols-3 gap-3">
-            {activeBots.map((b) => (
-              <div key={b.name} className="rounded-2xl bg-white/[0.03] border border-white/5 p-4 hover-lift">
-                <div className="flex items-start justify-between">
-                  <div className="h-9 w-9 rounded-xl brand-gradient grid place-items-center text-brand-foreground"><Bot size={16} /></div>
-                  <StatusPill status={b.status} />
+          {bots.length === 0 ? (
+            <EmptyState icon={Bot} text="No bots activated yet." cta={{ to: "/dashboard/bots", label: "Browse bots" }} />
+          ) : (
+            <div className="grid md:grid-cols-3 gap-3">
+              {bots.map((b) => (
+                <div key={b._id} className="rounded-2xl bg-white/[0.03] border border-white/5 p-4 hover-lift">
+                  <div className="flex items-start justify-between">
+                    <div className="h-9 w-9 rounded-xl brand-gradient grid place-items-center text-brand-foreground"><Bot size={16} /></div>
+                    <StatusPill status={b.status} />
+                  </div>
+                  <div className="mt-3 text-sm font-semibold">{b.bot?.name ?? "Bot"}</div>
+                  <div className="text-[11px] text-muted-foreground">{b.bot?.pair ?? "—"} · {b.bot?.risk ?? "—"} risk</div>
+                  <div className="mt-3 flex items-baseline gap-2">
+                    <div className="text-lg font-bold text-emerald-400">+${(b.profit ?? 0).toLocaleString()}</div>
+                    <div className="text-[10px] text-muted-foreground">· {b.winRate ?? 0}% WR</div>
+                  </div>
+                  <div className="text-[10px] text-muted-foreground mt-1">Uptime {b.uptime ?? "—"}</div>
+                  <div className="mt-3 flex gap-1.5">
+                    <button className="flex-1 py-1.5 text-[10px] rounded-lg glass hover:bg-white/10 flex items-center justify-center gap-1"><Pause size={10} /> Pause</button>
+                    <button className="flex-1 py-1.5 text-[10px] rounded-lg glass hover:bg-white/10 flex items-center justify-center gap-1"><Settings size={10} /> Edit</button>
+                  </div>
                 </div>
-                <div className="mt-3 text-sm font-semibold">{b.name}</div>
-                <div className="text-[11px] text-muted-foreground">{b.pair} · {b.risk} risk</div>
-                <div className="mt-3 flex items-baseline gap-2">
-                  <div className="text-lg font-bold text-emerald-400">+${b.profit.toLocaleString()}</div>
-                  <div className="text-[10px] text-muted-foreground">· {b.winRate}% WR</div>
-                </div>
-                <div className="text-[10px] text-muted-foreground mt-1">Uptime {b.uptime}</div>
-                <div className="mt-3 flex gap-1.5">
-                  <button className="flex-1 py-1.5 text-[10px] rounded-lg glass hover:bg-white/10 flex items-center justify-center gap-1"><Pause size={10} /> Pause</button>
-                  <button className="flex-1 py-1.5 text-[10px] rounded-lg glass hover:bg-white/10 flex items-center justify-center gap-1"><Settings size={10} /> Edit</button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </GlassCard>
 
         <GlassCard className="p-5 relative overflow-hidden">
           <div className="absolute -top-16 -right-16 h-44 w-44 rounded-full bg-brand/15 blur-3xl" />
-          <SectionTitle title="Prop Firm Challenge" subtitle="$100K · Phase 2" />
-          <div className="relative">
-            <div className="flex items-baseline gap-2">
-              <Counter to={propFirm.completion} suffix="%" />
-              <div className="text-xs text-muted-foreground">to passing</div>
-            </div>
-            <div className="mt-3 h-2.5 rounded-full bg-white/5 overflow-hidden">
-              <motion.div initial={{ width: 0 }} animate={{ width: `${propFirm.completion}%` }} transition={{ duration: 1 }} className="h-full brand-gradient rounded-full" />
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
-              <Mini label="Equity" value={`$${propFirm.currentEquity.toLocaleString()}`} />
-              <Mini label="Target" value={`$${propFirm.profitTarget.toLocaleString()}`} />
-              <Mini label="Daily DD" value={`${propFirm.dailyDrawdown}%`} />
-              <Mini label="Max DD" value={`${propFirm.maxDrawdown}%`} />
-              <Mini label="Days Left" value={`${propFirm.remainingDays}d`} />
-              <Mini label="Phase" value={propFirm.phase} />
-            </div>
-            <Link to="/dashboard/prop-firm" className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl brand-gradient text-brand-foreground text-xs font-medium">
-              <Trophy size={14} /> Continue Challenge
-            </Link>
-          </div>
+          {primaryChallenge ? (
+            <>
+              <SectionTitle title="Prop Firm Challenge" subtitle={`$${(primaryChallenge.size / 1000)}K · ${primaryChallenge.phase}`} />
+              <div className="relative">
+                <div className="flex items-baseline gap-2">
+                  <Counter to={primaryChallenge.completion} suffix="%" />
+                  <div className="text-xs text-muted-foreground">to passing</div>
+                </div>
+                <div className="mt-3 h-2.5 rounded-full bg-white/5 overflow-hidden">
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${primaryChallenge.completion}%` }} transition={{ duration: 1 }} className="h-full brand-gradient rounded-full" />
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
+                  <Mini label="Equity" value={`$${primaryChallenge.currentEquity.toLocaleString()}`} />
+                  <Mini label="Target" value={`$${primaryChallenge.profitTarget.toLocaleString()}`} />
+                  <Mini label="Daily DD" value={`${primaryChallenge.dailyDrawdown}%`} />
+                  <Mini label="Max DD" value={`${primaryChallenge.maxDrawdown}%`} />
+                  <Mini label="Status" value={primaryChallenge.status} />
+                  <Mini label="Phase" value={primaryChallenge.phase} />
+                </div>
+                <Link to="/dashboard/prop-firm" className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl brand-gradient text-brand-foreground text-xs font-medium">
+                  <Trophy size={14} /> Continue Challenge
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <SectionTitle title="Prop Firm Challenge" />
+              <EmptyState icon={Trophy} text="No active challenge." cta={{ to: "/dashboard/prop-firm", label: "Browse plans" }} />
+            </>
+          )}
         </GlassCard>
       </div>
 
       {/* Academy + Signals */}
       <div className="grid lg:grid-cols-3 gap-4">
         <GlassCard className="p-5">
-          <SectionTitle title="Academy Progress" subtitle={academy.currentCourse} />
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold"><Counter to={academy.completion} suffix="%" /></span>
-            <span className="text-xs text-muted-foreground">completion</span>
-          </div>
-          <div className="mt-3 h-2 rounded-full bg-white/5 overflow-hidden">
-            <div className="h-full brand-gradient rounded-full" style={{ width: `${academy.completion}%` }} />
-          </div>
-          <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
-            <Mini label="Lessons" value={`${academy.lessons.done}/${academy.lessons.total}`} />
-            <Mini label="Certificates" value={`${academy.certificates}`} />
-          </div>
-          <div className="mt-4 rounded-xl bg-white/[0.03] border border-white/5 p-3 text-xs">
-            <div className="text-muted-foreground text-[10px] uppercase tracking-wider">Next Mentorship</div>
-            <div className="mt-1 font-medium flex items-center gap-2"><GraduationCap size={14} className="text-brand" /> {academy.nextSession}</div>
-          </div>
-          <Link to="/dashboard/academy" className="mt-4 inline-flex items-center gap-2 text-xs text-brand hover:underline">Continue learning <ChevronRight size={12} /></Link>
+          {primaryEnrollment ? (
+            <>
+              <SectionTitle title="Academy Progress" subtitle={primaryEnrollment.course?.title ?? "Course"} />
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold"><Counter to={primaryEnrollment.progress} suffix="%" /></span>
+                <span className="text-xs text-muted-foreground">completion</span>
+              </div>
+              <div className="mt-3 h-2 rounded-full bg-white/5 overflow-hidden">
+                <div className="h-full brand-gradient rounded-full" style={{ width: `${primaryEnrollment.progress}%` }} />
+              </div>
+              <Link to="/dashboard/academy" className="mt-4 inline-flex items-center gap-2 text-xs text-brand hover:underline">Continue learning <ChevronRight size={12} /></Link>
+            </>
+          ) : (
+            <>
+              <SectionTitle title="Academy Progress" />
+              <EmptyState icon={GraduationCap} text="Not enrolled in any course yet." cta={{ to: "/dashboard/academy", label: "Browse courses" }} />
+            </>
+          )}
         </GlassCard>
 
         <GlassCard className="lg:col-span-2 p-5">
@@ -197,28 +238,32 @@ function OverviewPage() {
             subtitle="High-confidence calls from our analyst desk"
             action={<Link to="/dashboard/signals" className="text-xs text-brand hover:underline">View feed</Link>}
           />
-          <div className="grid md:grid-cols-2 gap-3">
-            {signals.map((s) => (
-              <div key={s.pair + s.entry} className="rounded-2xl bg-white/[0.03] border border-white/5 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold">{s.pair}</span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded ${s.direction === "BUY" ? "bg-emerald-400/15 text-emerald-400" : "bg-rose-400/15 text-rose-400"}`}>{s.direction}</span>
+          {signals.length === 0 ? (
+            <EmptyState icon={LineIcon} text="No signals published yet." />
+          ) : (
+            <div className="grid md:grid-cols-2 gap-3">
+              {signals.slice(0, 4).map((s) => (
+                <div key={s._id} className="rounded-2xl bg-white/[0.03] border border-white/5 p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold">{s.pair}</span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded ${s.direction === "BUY" ? "bg-emerald-400/15 text-emerald-400" : "bg-rose-400/15 text-rose-400"}`}>{s.direction}</span>
+                    </div>
+                    <StatusPill status={s.status} />
                   </div>
-                  <StatusPill status={s.status} />
+                  <div className="mt-3 grid grid-cols-3 gap-2 text-[10px]">
+                    <div><div className="text-muted-foreground">Entry</div><div className="font-medium text-sm">{s.entry}</div></div>
+                    <div><div className="text-muted-foreground">SL</div><div className="font-medium text-sm text-rose-400">{s.sl}</div></div>
+                    <div><div className="text-muted-foreground">TP</div><div className="font-medium text-sm text-emerald-400">{s.tp}</div></div>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between">
+                    <div className="text-[10px] text-muted-foreground">Confidence <span className="text-brand font-medium">{s.confidence}%</span></div>
+                    <button className="text-[10px] px-3 py-1.5 rounded-lg glass hover:bg-white/10 inline-flex items-center gap-1"><Copy size={10} /> Copy</button>
+                  </div>
                 </div>
-                <div className="mt-3 grid grid-cols-3 gap-2 text-[10px]">
-                  <div><div className="text-muted-foreground">Entry</div><div className="font-medium text-sm">{s.entry}</div></div>
-                  <div><div className="text-muted-foreground">SL</div><div className="font-medium text-sm text-rose-400">{s.sl}</div></div>
-                  <div><div className="text-muted-foreground">TP</div><div className="font-medium text-sm text-emerald-400">{s.tp}</div></div>
-                </div>
-                <div className="mt-3 flex items-center justify-between">
-                  <div className="text-[10px] text-muted-foreground">Confidence <span className="text-brand font-medium">{s.confidence}%</span></div>
-                  <button className="text-[10px] px-3 py-1.5 rounded-lg glass hover:bg-white/10 inline-flex items-center gap-1"><Copy size={10} /> Copy</button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </GlassCard>
       </div>
 
@@ -229,30 +274,34 @@ function OverviewPage() {
             title="Recent Transactions"
             action={<button className="text-xs text-brand hover:underline">Download statement</button>}
           />
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                <tr className="border-b border-white/5">
-                  <th className="text-left py-2 font-medium">Date</th>
-                  <th className="text-left py-2 font-medium">Type</th>
-                  <th className="text-left py-2 font-medium">Reference</th>
-                  <th className="text-right py-2 font-medium">Amount</th>
-                  <th className="text-right py-2 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transactions.slice(0, 6).map((t) => (
-                  <tr key={t.id} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02]">
-                    <td className="py-2.5 text-muted-foreground">{t.date}</td>
-                    <td className="py-2.5">{t.type}</td>
-                    <td className="py-2.5 text-muted-foreground">{t.ref}</td>
-                    <td className={`py-2.5 text-right font-medium ${t.amount > 0 ? "text-emerald-400" : "text-rose-400"}`}>{t.amount > 0 ? "+" : ""}${Math.abs(t.amount).toLocaleString()}</td>
-                    <td className="py-2.5 text-right"><StatusPill status={t.status} /></td>
+          {transactions.length === 0 ? (
+            <EmptyState icon={WalletIcon} text="No transactions yet." cta={{ to: "/dashboard/wallet", label: "Make a deposit" }} />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  <tr className="border-b border-white/5">
+                    <th className="text-left py-2 font-medium">Date</th>
+                    <th className="text-left py-2 font-medium">Type</th>
+                    <th className="text-left py-2 font-medium">Reference</th>
+                    <th className="text-right py-2 font-medium">Amount</th>
+                    <th className="text-right py-2 font-medium">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {transactions.slice(0, 6).map((t) => (
+                    <tr key={t._id} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02]">
+                      <td className="py-2.5 text-muted-foreground">{new Date(t.createdAt).toLocaleDateString()}</td>
+                      <td className="py-2.5">{t.type}</td>
+                      <td className="py-2.5 text-muted-foreground">{t.ref}</td>
+                      <td className={`py-2.5 text-right font-medium ${t.amount > 0 ? "text-emerald-400" : "text-rose-400"}`}>{t.amount > 0 ? "+" : ""}${Math.abs(t.amount).toLocaleString()}</td>
+                      <td className="py-2.5 text-right"><StatusPill status={t.status} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </GlassCard>
 
         <GlassCard className="p-5">
@@ -334,7 +383,7 @@ function OverviewPage() {
             </div>
             <div className="rounded-xl bg-white/[0.03] border border-white/5 p-3">
               <div className="text-[10px] text-muted-foreground">Earnings</div>
-              <div className="text-lg font-bold mt-0.5 text-emerald-400">$<Counter to={referral.earnings} decimals={2} /></div>
+              <div className="text-lg font-bold mt-0.5 text-emerald-400">$<Counter to={wallet?.referralEarnings ?? referral.earnings} decimals={2} /></div>
             </div>
           </div>
           <div className="mt-4 flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 p-2 pl-3">
@@ -344,6 +393,16 @@ function OverviewPage() {
           </div>
         </GlassCard>
       </div>
+    </div>
+  );
+}
+
+function EmptyState({ icon: Icon, text, cta }: { icon: any; text: string; cta?: { to: string; label: string } }) {
+  return (
+    <div className="rounded-2xl border border-dashed border-white/10 py-10 flex flex-col items-center justify-center text-center gap-2">
+      <Icon size={22} className="text-muted-foreground" />
+      <div className="text-xs text-muted-foreground">{text}</div>
+      {cta && <Link to={cta.to} className="mt-1 text-xs text-brand hover:underline">{cta.label}</Link>}
     </div>
   );
 }

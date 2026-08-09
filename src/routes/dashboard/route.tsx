@@ -6,6 +6,7 @@ import { Topbar } from "@/components/dashboard/Topbar";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/lib/theme";
 import { getSession, refreshSession } from "@/lib/auth";
+import { DashboardDataProvider } from "@/lib/dashboard-data";
 
 export const Route = createFileRoute("/dashboard")({
   ssr: false,
@@ -65,6 +66,7 @@ function DashboardLayout() {
 
   return (
     <ThemeProvider>
+      <DashboardDataProvider>
       <div className="relative min-h-screen">
         <div aria-hidden className="pointer-events-none fixed inset-0 grid-bg opacity-30" />
         <div aria-hidden className="fixed inset-0 -z-10" style={{ background: "var(--gradient-hero)" }} />
@@ -87,6 +89,7 @@ function DashboardLayout() {
         </div>
         <Toaster position="top-right" richColors closeButton />
       </div>
+      </DashboardDataProvider>
     </ThemeProvider>
   );
 }

@@ -2,8 +2,8 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bell, Search, Menu, Wallet, User2, ChevronDown, LogOut, Key, Shield, CreditCard, Settings, ArrowDownToLine, ArrowUpFromLine, BellDot, Code2, Banknote, Sun, Moon } from "lucide-react";
-import { notifications as demoNotifs, wallet, user } from "@/lib/demo-data";
 import { signOut } from "@/lib/auth";
+import { useDashboardData } from "@/lib/dashboard-data";
 import { useTheme } from "@/lib/theme";
 
 
@@ -25,14 +25,27 @@ export function Topbar({ onOpenMobile }: { onOpenMobile: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const info = routeTitles[pathname] ?? { title: "Dashboard", crumb: "Dashboard" };
   const { theme, toggle } = useTheme();
+  const { session, wallet, notifications, markAllNotificationsRead } = useDashboardData();
 
+  const name = session?.name || "Trader";
+  const email = session?.email || "";
+  const initials = name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase() || "U";
 
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [notifs, setNotifs] = useState(demoNotifs);
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
-  const unread = notifs.filter((n) => n.unread).length;
+  const unread = notifications.filter((n) => n.unread).length;
+
+  function timeAgo(iso: string) {
+    const diffMs = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return "Just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  }
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -72,7 +85,7 @@ export function Topbar({ onOpenMobile }: { onOpenMobile: () => void }) {
             <div className="h-7 w-7 rounded-lg brand-gradient grid place-items-center text-brand-foreground"><Wallet size={14} /></div>
             <div className="leading-tight">
               <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Available</div>
-              <div className="text-xs font-semibold">${wallet.available.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+              <div className="text-xs font-semibold">${(wallet?.available ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
             </div>
           </Link>
 
@@ -110,17 +123,20 @@ export function Topbar({ onOpenMobile }: { onOpenMobile: () => void }) {
                 >
                   <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
                     <div className="text-sm font-semibold">Notifications</div>
-                    <button onClick={() => setNotifs(notifs.map((n) => ({ ...n, unread: false })))} className="text-[11px] text-brand hover:underline">
+                    <button onClick={markAllNotificationsRead} className="text-[11px] text-brand hover:underline">
                       Mark all read
                     </button>
                   </div>
                   <div className="max-h-80 overflow-y-auto">
-                    {notifs.map((n) => (
-                      <div key={n.id} className={`px-4 py-3 border-b border-white/5 last:border-0 hover:bg-white/5 cursor-pointer flex gap-3 ${n.unread ? "bg-white/[0.02]" : ""}`}>
+                    {notifications.length === 0 && (
+                      <div className="px-4 py-6 text-center text-xs text-muted-foreground">No notifications yet</div>
+                    )}
+                    {notifications.map((n) => (
+                      <div key={n._id} className={`px-4 py-3 border-b border-white/5 last:border-0 hover:bg-white/5 cursor-pointer flex gap-3 ${n.unread ? "bg-white/[0.02]" : ""}`}>
                         <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${n.unread ? "bg-brand animate-glow-pulse" : "bg-muted"}`} />
                         <div className="min-w-0 flex-1">
                           <div className="text-xs">{n.title}</div>
-                          <div className="text-[10px] text-muted-foreground mt-0.5">{n.time}</div>
+                          <div className="text-[10px] text-muted-foreground mt-0.5">{timeAgo(n.createdAt)}</div>
                         </div>
                       </div>
                     ))}
@@ -141,7 +157,7 @@ export function Topbar({ onOpenMobile }: { onOpenMobile: () => void }) {
               aria-label="Account menu"
               className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl glass hover:bg-white/10 transition"
             >
-              <div className="h-8 w-8 rounded-lg brand-gradient grid place-items-center text-brand-foreground text-sm font-semibold">{user.initials}</div>
+              <div className="h-8 w-8 rounded-lg brand-gradient grid place-items-center text-brand-foreground text-sm font-semibold">{initials}</div>
               <ChevronDown size={14} className="text-muted-foreground hidden sm:block" />
             </button>
             <AnimatePresence>
@@ -151,8 +167,8 @@ export function Topbar({ onOpenMobile }: { onOpenMobile: () => void }) {
                   className="absolute right-0 mt-2 w-[260px] glass-strong rounded-2xl shadow-card overflow-hidden"
                 >
                   <div className="px-4 py-3 border-b border-white/5">
-                    <div className="text-sm font-medium">{user.name}</div>
-                    <div className="text-[11px] text-muted-foreground truncate">{user.email}</div>
+                    <div className="text-sm font-medium">{name}</div>
+                    <div className="text-[11px] text-muted-foreground truncate">{email}</div>
                   </div>
                   <div className="py-2 text-sm">
                     <MenuLink to="/dashboard/profile" icon={User2}>My Profile</MenuLink>
@@ -168,7 +184,7 @@ export function Topbar({ onOpenMobile }: { onOpenMobile: () => void }) {
                     <MenuLink to="/dashboard/wallet" icon={CreditCard}>Billing</MenuLink>
                   </div>
                   <button
-                    onClick={() => { signOut(); window.location.href = "/login"; }}
+                    onClick={async () => { await signOut(); window.location.href = "/login"; }}
                     className="w-full flex items-center gap-2 px-4 py-3 text-sm text-rose-400 hover:bg-rose-400/10 border-t border-white/5"
                   >
                     <LogOut size={16} /> Logout

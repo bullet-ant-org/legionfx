@@ -18,6 +18,7 @@ import { Route as PayRouteRouteImport } from './routes/pay/route'
 import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PayIndexRouteImport } from './routes/pay/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as DashboardWalletRouteImport } from './routes/dashboard/wallet'
@@ -90,6 +91,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PayIndexRoute = PayIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PayRouteRoute,
 } as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
@@ -231,7 +237,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/dashboard': typeof DashboardRouteRouteWithChildren
-  '/pay': typeof PayRouteRoute
+  '/pay': typeof PayRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
@@ -264,10 +270,10 @@ export interface FileRoutesByFullPath {
   '/dashboard/wallet': typeof DashboardWalletRoute
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/pay/': typeof PayIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/pay': typeof PayRouteRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
@@ -300,13 +306,14 @@ export interface FileRoutesByTo {
   '/dashboard/wallet': typeof DashboardWalletRoute
   '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/pay': typeof PayIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/dashboard': typeof DashboardRouteRouteWithChildren
-  '/pay': typeof PayRouteRoute
+  '/pay': typeof PayRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
@@ -339,6 +346,7 @@ export interface FileRoutesById {
   '/dashboard/wallet': typeof DashboardWalletRoute
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/pay/': typeof PayIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -379,10 +387,10 @@ export interface FileRouteTypes {
     | '/dashboard/wallet'
     | '/admin/'
     | '/dashboard/'
+    | '/pay/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/pay'
     | '/about'
     | '/contact'
     | '/login'
@@ -415,6 +423,7 @@ export interface FileRouteTypes {
     | '/dashboard/wallet'
     | '/admin'
     | '/dashboard'
+    | '/pay'
   id:
     | '__root__'
     | '/'
@@ -453,13 +462,14 @@ export interface FileRouteTypes {
     | '/dashboard/wallet'
     | '/admin/'
     | '/dashboard/'
+    | '/pay/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
-  PayRouteRoute: typeof PayRouteRoute
+  PayRouteRoute: typeof PayRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   ContactRoute: typeof ContactRoute
   LoginRoute: typeof LoginRoute
@@ -531,6 +541,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/pay/': {
+      id: '/pay/'
+      path: '/'
+      fullPath: '/pay/'
+      preLoaderRoute: typeof PayIndexRouteImport
+      parentRoute: typeof PayRouteRoute
     }
     '/dashboard/': {
       id: '/dashboard/'
@@ -798,11 +815,23 @@ const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
   DashboardRouteRouteChildren,
 )
 
+interface PayRouteRouteChildren {
+  PayIndexRoute: typeof PayIndexRoute
+}
+
+const PayRouteRouteChildren: PayRouteRouteChildren = {
+  PayIndexRoute: PayIndexRoute,
+}
+
+const PayRouteRouteWithChildren = PayRouteRoute._addFileChildren(
+  PayRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   DashboardRouteRoute: DashboardRouteRouteWithChildren,
-  PayRouteRoute: PayRouteRoute,
+  PayRouteRoute: PayRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   ContactRoute: ContactRoute,
   LoginRoute: LoginRoute,

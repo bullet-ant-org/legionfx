@@ -1,9 +1,24 @@
 // Thin fetch wrapper around the LegionFX backend API.
-// Auth is cookie-based (httpOnly JWT cookie set by the backend), so every
-// request goes with credentials: "include" and we never touch the token
-// directly on the client.
+//
+// Auth uses a Bearer token, not the cookie. The backend also sets an
+// httpOnly cookie, but since the frontend and backend live on different
+// top-level domains (e.g. Vercel + Render), that cookie is cross-site and
+// gets silently dropped by browsers' third-party cookie protections
+// (Safari ITP, and Chrome is moving the same direction) even with
+// SameSite=None; Secure set correctly. The token returned in the login/
+// signup response body sidesteps that entirely.
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const TOKEN_KEY = "legionfx_token";
+
+let token: string | null = typeof window !== "undefined" ? window.localStorage.getItem(TOKEN_KEY) : null;
+
+export function setToken(t: string | null) {
+  token = t;
+  if (typeof window === "undefined") return;
+  if (t) window.localStorage.setItem(TOKEN_KEY, t);
+  else window.localStorage.removeItem(TOKEN_KEY);
+}
 
 export class ApiError extends Error {
   status: number;
@@ -19,6 +34,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
     ...options,
@@ -130,13 +146,13 @@ export type ApiNotification = {
 
 export const api = {
   signup: (name: string, email: string, password: string) =>
-    request<{ user: ApiUser }>("/auth/signup", {
+    request<{ user: ApiUser; token: string }>("/auth/signup", {
       method: "POST",
       body: JSON.stringify({ name, email, password }),
     }),
 
   login: (email: string, password: string) =>
-    request<{ user: ApiUser }>("/auth/login", {
+    request<{ user: ApiUser; token: string }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),

@@ -2,7 +2,7 @@
 // cookie set by the server — this module just calls the API and keeps a
 // small localStorage mirror of the current user for fast UI reads (so route
 // guards don't need to await a network call on every render).
-import { api, ApiError, type ApiUser } from "./api";
+import { api, ApiError, setToken, type ApiUser } from "./api";
 
 const KEY = "legionfx_session";
 
@@ -50,7 +50,8 @@ export async function refreshSession(): Promise<Session | null> {
 
 export async function signIn(email: string, password: string): Promise<{ session: Session | null; error: string | null }> {
   try {
-    const { user } = await api.login(email, password);
+    const { user, token } = await api.login(email, password);
+    setToken(token);
     const session = toSession(user);
     persist(session);
     return { session, error: null };
@@ -62,7 +63,8 @@ export async function signIn(email: string, password: string): Promise<{ session
 
 export async function signUp(name: string, email: string, password: string): Promise<{ session: Session | null; error: string | null }> {
   try {
-    const { user } = await api.signup(name, email, password);
+    const { user, token } = await api.signup(name, email, password);
+    setToken(token);
     const session = toSession(user);
     persist(session);
     return { session, error: null };
@@ -76,6 +78,7 @@ export async function signOut() {
   try {
     await api.logout();
   } finally {
+    setToken(null);
     persist(null);
   }
 }

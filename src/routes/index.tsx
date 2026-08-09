@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Sparkles, Bot, GraduationCap, Wallet, Signal, Check, Star, Quote } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Bot, GraduationCap, Wallet, Signal, ShieldCheck, Globe2, Clock4, Quote } from "lucide-react";
 import { SiteLayout } from "@/components/site/Layout";
-import { Section, SectionHeader } from "@/components/site/Section";
 import { Counter } from "@/components/site/Counter";
 import { DashboardMockup } from "@/components/site/DashboardMockup";
 
@@ -9,227 +8,251 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "LEGIONFX — Trade Smarter. Get Funded. Build Wealth." },
-      { name: "description", content: "Premium Forex education, prop firm funding, trading automation, and elite signals trusted by 5,000+ traders worldwide." },
+      { name: "description", content: "LEGIONFX is a global trading institution: funded accounts, professional education, automated execution and institutional research for serious traders." },
+      { property: "og:title", content: "LEGIONFX — Trade Smarter. Get Funded. Build Wealth." },
+      { property: "og:description", content: "Funded accounts, professional education, automated execution and institutional research for serious traders." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: HomePage,
 });
 
-const PARTNERS = ["MetaTrader","TradingView","Match Trader","cTrader","DXtrade","Binance","Bybit","FTMO","FundedNext","The5ers"];
+const PARTNERS = ["MetaTrader", "TradingView", "Match-Trader", "cTrader", "DXtrade", "Binance", "Bybit", "Equinix LD4", "OneZero", "Sterling"];
 
-const SERVICES = [
-  { icon: Wallet, title: "Prop Firm Funding", desc: "Pass funded account challenges and access professional capital without risking your own.", highlight: "70% Success Rate" },
-  { icon: GraduationCap, title: "Forex Academy", desc: "Beginner-to-advanced education in market structure, risk, psychology and live trading.", highlight: "500+ Traders Trained" },
-  { icon: Bot, title: "Trading Bots", desc: "Institutional-inspired automated systems engineered for consistency, speed and intelligent execution.", highlight: "90% Bot Accuracy" },
-  { icon: Signal, title: "Premium Signals", desc: "Professional trade setups backed by expert analysis and disciplined risk frameworks.", highlight: "95% Signal Accuracy" },
+const DESKS = [
+  { icon: Wallet, k: "01", title: "Capital & Funding", desc: "Two-phase evaluations from $10K to $400K with transparent objectives, institutional risk limits and same-week payouts.", stat: "70%", statLabel: "Evaluation pass rate" },
+  { icon: GraduationCap, k: "02", title: "Trader Development", desc: "A structured curriculum built on market structure, liquidity, risk engineering and the psychology of consistency.", stat: "500+", statLabel: "Traders mentored" },
+  { icon: Bot, k: "03", title: "Systematic Execution", desc: "Latency-aware automation with defined drawdown ceilings, portfolio-level exposure control and full audit trails.", stat: "90%", statLabel: "System accuracy" },
+  { icon: Signal, k: "04", title: "Research & Signals", desc: "Desk-grade briefings and trade plans with entry logic, invalidation and position sizing — never a naked alert.", stat: "95%", statLabel: "Plan accuracy" },
 ];
 
-const STATS = [
-  { value: 7, suffix: "+", label: "Years of Excellence" },
-  { value: 500, suffix: "+", label: "Pro Traders Mentored" },
-  { value: 5000, suffix: "+", label: "Active Traders" },
-  { value: 900, prefix: "$", suffix: "M+", label: "Trading Volume" },
-  { value: 90, suffix: "%", label: "Bot Accuracy" },
-  { value: 95, suffix: "%", label: "Signal Accuracy" },
-  { value: 70, suffix: "%", label: "Prop Firm Success" },
+const NUMBERS = [
+  { value: 7, suffix: "+", label: "Years operating" },
+  { value: 5000, suffix: "+", label: "Active traders" },
+  { value: 900, prefix: "$", suffix: "M+", label: "Volume routed" },
+  { value: 42, suffix: "", label: "Countries served" },
+];
+
+const PILLARS = [
+  { icon: ShieldCheck, title: "Segregated capital", desc: "Client funding, payout reserves and operating capital are held and reconciled separately. Every ledger entry is traceable." },
+  { icon: Globe2, title: "Global infrastructure", desc: "Execution routed through tier-one liquidity in LD4, NY4 and TY3, with redundancy across three regions." },
+  { icon: Clock4, title: "Answered in minutes", desc: "A real desk, staffed across sessions. Median first response on funded-account issues is under nine minutes." },
+];
+
+const VOICES = [
+  { quote: "The evaluation was the first one I've taken that felt engineered rather than designed to fail. The objectives were the same on day forty as on day one.", name: "Daniel Osei", role: "Funded — $200K, London" },
+  { quote: "I came for signals and stayed for the risk framework. My drawdown profile changed more in one quarter here than in three years alone.", name: "Amara Nwosu", role: "Prop trader, Lagos" },
+  { quote: "Their automation desk let me run three strategies with real exposure limits. It reads like software written by people who have actually lost money.", name: "Marcus Feld", role: "Systematic trader, Frankfurt" },
 ];
 
 function HomePage() {
   return (
     <SiteLayout>
       {/* HERO */}
-      <section className="relative">
-        <div aria-hidden className="absolute inset-0 -z-10" style={{ background: "var(--gradient-hero)" }} />
-        <div className="mx-auto max-w-7xl px-4 pt-10 pb-32 grid lg:grid-cols-2 gap-16 items-center">
-          <div className="animate-fade-up">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass text-xs">
-              <Sparkles size={12} className="text-brand" />
-              Trusted by Thousands of Traders Worldwide
+      <section className="relative border-b border-border/60">
+        <div className="mx-auto max-w-7xl px-4 pt-8 pb-20">
+          <div className="grid lg:grid-cols-12 gap-12 items-end">
+            <div className="lg:col-span-7">
+              <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+                <span className="h-px w-10 bg-brand" />
+                Est. 2018 · Global trading institution
+              </div>
+              <h1 className="mt-7 text-[2.75rem] md:text-[4.5rem] leading-[0.98] tracking-tight font-semibold">
+                Trade smarter.
+                <br />
+                <span className="font-serif-display italic text-brand">Get funded.</span> Build wealth
+                <br />
+                without limits.
+              </h1>
+              <p className="mt-7 text-base md:text-lg text-muted-foreground max-w-xl leading-relaxed">
+                LEGIONFX operates the capital, the curriculum and the technology behind thousands of professional traders — one accountable institution instead of four disconnected vendors.
+              </p>
+              <div className="mt-9 flex flex-wrap gap-3">
+                <Link to="/services" className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-brand text-brand-foreground font-medium hover:opacity-90 transition">
+                  Open an evaluation <ArrowRight size={16} className="group-hover:translate-x-1 transition" />
+                </Link>
+                <Link to="/about" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl border border-border hover:bg-foreground/5 transition">
+                  Read the firm profile
+                </Link>
+              </div>
             </div>
-            <h1 className="mt-6 text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
-              Trade Smarter. <br />
-              <span className="text-gradient">Get Funded.</span> <br />
-              Build Wealth Without Limits.
-            </h1>
-            <p className="mt-6 text-lg text-muted-foreground max-w-xl leading-relaxed">
-              For over seven years, LEGIONFX has empowered traders through professional education, advanced technology, institutional-grade analysis and proven funding strategies — from first chart to scaled professional career.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/pricing" className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl brand-gradient text-brand-foreground font-medium shadow-glow hover:opacity-90 transition">
-                Start Your Journey <ArrowRight size={16} className="group-hover:translate-x-1 transition" />
-              </Link>
-              <Link to="/services" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl glass hover:bg-white/10 transition">
-                Explore Our Services
-              </Link>
-            </div>
-            <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {[{v:"7+",l:"Years"},{v:"5,000+",l:"Traders"},{v:"$900M+",l:"Volume"},{v:"70%",l:"Funded Rate"}].map(s => (
-                <div key={s.l} className="glass rounded-2xl p-4">
-                  <div className="text-2xl font-bold text-gradient">{s.v}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{s.l}</div>
-                </div>
-              ))}
+
+            <div className="lg:col-span-5">
+              <div className="grid grid-cols-2 gap-px bg-border/70 border border-border/70 rounded-2xl overflow-hidden">
+                {NUMBERS.map((n) => (
+                  <div key={n.label} className="bg-background p-6">
+                    <div className="text-3xl font-semibold mono tracking-tight">
+                      <Counter to={n.value} prefix={n.prefix ?? ""} suffix={n.suffix} />
+                    </div>
+                    <div className="mt-2 text-xs text-muted-foreground">{n.label}</div>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-4 text-xs text-muted-foreground leading-relaxed">
+                Figures reflect platform activity through the current fiscal year. Past performance is not indicative of future results.
+              </p>
             </div>
           </div>
-          <div className="relative">
-            <DashboardMockup />
+
+          {/* Terminal screenshot */}
+          <div className="mt-20">
+            <div className="flex items-end justify-between gap-6 mb-5">
+              <div>
+                <div className="text-[11px] uppercase tracking-[0.25em] text-brand">The terminal</div>
+                <h2 className="mt-2 text-2xl md:text-3xl font-semibold tracking-tight">One console for capital, systems and research.</h2>
+              </div>
+              <Link to="/login" className="hidden md:inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition">
+                View the client portal <ArrowUpRight size={15} />
+              </Link>
+            </div>
+            <div className="rounded-3xl border border-border/70 bg-foreground/[0.02] p-3 md:p-5">
+              <DashboardMockup />
+            </div>
           </div>
         </div>
       </section>
 
       {/* PARTNERS */}
-      <Section className="!py-16">
-        <SectionHeader eyebrow="Industry Partners" title="Trusted Across The Trading Industry" subtitle="We work within the world's leading trading ecosystem." />
-        <div className="relative overflow-hidden mask-fade">
-          <div className="flex gap-16 animate-marquee whitespace-nowrap">
-            {[...PARTNERS, ...PARTNERS].map((p, i) => (
-              <div key={i} className="text-xl md:text-2xl font-display font-semibold text-muted-foreground/60 hover:text-brand transition shrink-0">
-                {p}
+      <section className="border-b border-border/60 py-10">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground mb-6">Infrastructure & venue partners</div>
+          <div className="relative overflow-hidden mask-fade">
+            <div className="flex gap-14 animate-marquee whitespace-nowrap">
+              {[...PARTNERS, ...PARTNERS].map((p, i) => (
+                <div key={i} className="text-lg md:text-xl font-display font-medium text-muted-foreground/70 hover:text-foreground transition shrink-0">
+                  {p}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* DESKS */}
+      <section className="border-b border-border/60">
+        <div className="mx-auto max-w-7xl px-4 py-24">
+          <div className="grid lg:grid-cols-12 gap-10 mb-14">
+            <div className="lg:col-span-5">
+              <div className="text-[11px] uppercase tracking-[0.25em] text-brand">Four desks</div>
+              <h2 className="mt-3 text-3xl md:text-5xl font-semibold tracking-tight leading-[1.05]">
+                The full path from
+                <br />
+                <span className="font-serif-display italic">first chart to payout.</span>
+              </h2>
+            </div>
+            <p className="lg:col-span-6 lg:col-start-7 text-muted-foreground leading-relaxed self-end">
+              Most traders lose years assembling a career out of unrelated products. We run each function as a desk with its own mandate, its own risk oversight and one shared standard of accountability.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-px bg-border/70 border border-border/70 rounded-3xl overflow-hidden">
+            {DESKS.map((d) => (
+              <div key={d.title} className="group bg-background p-8 md:p-10 hover:bg-foreground/[0.02] transition">
+                <div className="flex items-start justify-between">
+                  <div className="h-11 w-11 rounded-xl border border-border grid place-items-center text-brand">
+                    <d.icon size={19} />
+                  </div>
+                  <span className="mono text-xs text-muted-foreground/60">{d.k}</span>
+                </div>
+                <h3 className="mt-6 text-xl font-semibold tracking-tight">{d.title}</h3>
+                <p className="mt-3 text-sm text-muted-foreground leading-relaxed max-w-md">{d.desc}</p>
+                <div className="mt-7 flex items-end justify-between">
+                  <div>
+                    <div className="text-2xl font-semibold mono text-brand">{d.stat}</div>
+                    <div className="text-[11px] text-muted-foreground mt-1">{d.statLabel}</div>
+                  </div>
+                  <Link to="/services" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground group-hover:text-foreground transition">
+                    Detail <ArrowUpRight size={14} />
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
         </div>
-      </Section>
+      </section>
 
-      {/* SERVICES */}
-      <Section id="services">
-        <SectionHeader eyebrow="Our Ecosystem" title="Everything You Need To Become A Profitable Trader" subtitle="LEGIONFX combines education, technology and funding into one complete ecosystem." />
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {SERVICES.map((s) => (
-            <div key={s.title} className="group glass rounded-3xl p-6 hover-lift relative overflow-hidden">
-              <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-brand/20 blur-3xl opacity-0 group-hover:opacity-100 transition" />
-              <div className="h-12 w-12 rounded-2xl brand-gradient grid place-items-center text-brand-foreground mb-5 shadow-glow">
-                <s.icon size={22} />
-              </div>
-              <h3 className="text-lg font-semibold">{s.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
-              <div className="mt-4 inline-flex px-2.5 py-1 rounded-full bg-brand/10 text-brand text-xs">{s.highlight}</div>
-              <Link to="/services" className="mt-5 inline-flex items-center gap-1.5 text-sm text-brand group-hover:gap-2.5 transition-all">
-                Learn more <ArrowRight size={14} />
-              </Link>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      {/* STATS */}
-      <Section>
-        <SectionHeader eyebrow="By The Numbers" title="Numbers That Speak For Themselves" />
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-          {STATS.map((s) => (
-            <div key={s.label} className="glass rounded-2xl p-5 text-center hover-lift">
-              <div className="text-3xl font-bold text-gradient">
-                <Counter to={s.value} prefix={s.prefix ?? ""} suffix={s.suffix} />
-              </div>
-              <div className="mt-2 text-xs text-muted-foreground">{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      {/* ABOUT PREVIEW */}
-      <Section>
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="relative">
-            <div className="absolute -inset-6 bg-brand/10 blur-3xl rounded-3xl -z-10" />
-            <div className="grid grid-cols-2 gap-4">
-              <div className="glass rounded-2xl aspect-[4/5] grid-bg" />
-              <div className="space-y-4">
-                <div className="glass rounded-2xl aspect-square grid place-items-center">
-                  <div className="text-5xl font-bold text-gradient">7+</div>
-                </div>
-                <div className="glass rounded-2xl aspect-square brand-gradient/30 grid-bg" />
-              </div>
-            </div>
-          </div>
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass text-xs text-brand mb-5">About LEGIONFX</div>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Built By Traders. <br/><span className="text-gradient">Driven By Excellence.</span></h2>
-            <p className="mt-5 text-muted-foreground leading-relaxed">
-              For more than seven years, LEGIONFX has stood for discipline, transparency, consistency and the long game. We don't sell shortcuts. We build traders — through structured education, intelligent technology and serious mentorship — until profitability becomes a habit, not a hope.
+      {/* ABOUT / MANIFESTO */}
+      <section className="border-b border-border/60">
+        <div className="mx-auto max-w-7xl px-4 py-24 grid lg:grid-cols-12 gap-12 items-center">
+          <div className="lg:col-span-5">
+            <div className="text-[11px] uppercase tracking-[0.25em] text-brand">The firm</div>
+            <h2 className="mt-3 text-3xl md:text-5xl font-semibold tracking-tight leading-[1.05]">
+              Built by traders.
+              <br />
+              <span className="font-serif-display italic">Run like an institution.</span>
+            </h2>
+            <p className="mt-6 text-muted-foreground leading-relaxed">
+              LEGIONFX was founded by a small group of desk traders who were tired of watching capable people fail for structural reasons — bad sizing, hostile evaluation rules, no feedback loop. Seven years later the thesis has not changed: give a disciplined trader real capital, real instruction and honest reporting, and the results take care of themselves.
             </p>
-            <Link to="/about" className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-xl glass hover:bg-white/10 transition">
-              Learn More About LEGIONFX <ArrowRight size={16}/>
+            <Link to="/about" className="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-border hover:bg-foreground/5 transition text-sm">
+              Our history and leadership <ArrowRight size={15} />
             </Link>
           </div>
-        </div>
-      </Section>
 
-      {/* PRICING TEASER */}
-      <Section id="pricing">
-        <SectionHeader eyebrow="Pricing" title="Choose Your Trading Journey" subtitle="Invest once. Trade for life." />
-        <div className="grid md:grid-cols-3 gap-5 items-center">
-          <PlanCard name="Starter" tagline="Ideal for Beginners" price="$24" features={["Premium Signals","Community Access","Daily Market Brief","Mobile App"]} />
-          <PlanCard featured name="Professional" tagline="Most Popular" price="$99" features={["Everything in Starter","Group Mentorship","Risk Frameworks","Live Trading Sessions","Priority Support"]} />
-          <PlanCard name="Elite" tagline="Ultimate Experience" price="$199" features={["Everything in Professional","1-on-1 Mentorship","Prop Firm Coaching","Bot Access","VIP Community"]} />
-        </div>
-      </Section>
-
-      {/* TESTIMONIALS */}
-      <Section>
-        <SectionHeader eyebrow="Testimonials" title="Real Traders. Real Results." />
-        <div className="grid md:grid-cols-3 gap-5">
-          {[
-            { n:"Daniel R.", c:"United Kingdom", t:"Passed my $100K FTMO challenge in 18 days using the LEGIONFX risk framework. The mentorship is unreal." },
-            { n:"Amara O.", c:"Nigeria", t:"From blowing accounts to consistent monthly payouts. The academy literally rewired how I see the market." },
-            { n:"Liam K.", c:"Australia", t:"The signals plus bot combo is criminally good. 11 weeks green. Best investment I've made in trading." },
-          ].map(r => (
-            <div key={r.n} className="glass rounded-3xl p-7 hover-lift">
-              <Quote className="text-brand mb-4" size={22}/>
-              <p className="text-sm leading-relaxed text-muted-foreground">{r.t}</p>
-              <div className="mt-5 flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-semibold">{r.n}</div>
-                  <div className="text-xs text-muted-foreground">{r.c}</div>
+          <div className="lg:col-span-6 lg:col-start-7 space-y-px bg-border/70 border border-border/70 rounded-3xl overflow-hidden">
+            {PILLARS.map((p) => (
+              <div key={p.title} className="bg-background p-7 flex gap-5">
+                <div className="h-10 w-10 shrink-0 rounded-lg border border-border grid place-items-center text-brand">
+                  <p.icon size={17} />
                 </div>
-                <div className="flex gap-0.5 text-brand">{[...Array(5)].map((_,i)=><Star key={i} size={12} fill="currentColor"/>)}</div>
+                <div>
+                  <h3 className="font-semibold tracking-tight">{p.title}</h3>
+                  <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{p.desc}</p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      {/* CTA */}
-      <Section>
-        <div className="relative overflow-hidden rounded-[32px] glass-strong p-12 md:p-20 text-center">
-          <div className="absolute inset-0 -z-10 opacity-80" style={{ background: "var(--gradient-hero)" }} />
-          <div className="absolute inset-0 -z-10 grid-bg opacity-50" />
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight max-w-3xl mx-auto">Ready to take your trading to the next level?</h2>
-          <p className="mt-4 text-muted-foreground max-w-xl mx-auto">Join thousands of traders who trust LEGIONFX for education, technology, mentorship, and funded account success.</p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link to="/login" className="px-6 py-3.5 rounded-xl brand-gradient text-brand-foreground font-medium shadow-glow">Start Trading</Link>
-            <Link to="/contact" className="px-6 py-3.5 rounded-xl glass hover:bg-white/10">Contact Our Team</Link>
+            ))}
           </div>
         </div>
-      </Section>
-    </SiteLayout>
-  );
-}
+      </section>
 
-function PlanCard({ name, tagline, price, features, featured }: { name: string; tagline: string; price: string; features: string[]; featured?: boolean }) {
-  return (
-    <div className={`relative rounded-3xl p-8 transition ${featured ? "glass-strong scale-100 md:scale-110 z-10 shadow-glow border-brand/40" : "glass hover-lift"}`}>
-      {featured && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full brand-gradient text-brand-foreground text-xs font-semibold">
-          {tagline}
+      {/* VOICES */}
+      <section className="border-b border-border/60">
+        <div className="mx-auto max-w-7xl px-4 py-24">
+          <div className="text-[11px] uppercase tracking-[0.25em] text-brand mb-3">Trader accounts</div>
+          <h2 className="text-3xl md:text-5xl font-semibold tracking-tight max-w-2xl leading-[1.05]">
+            What the desk sounds like from the other side.
+          </h2>
+          <div className="mt-14 grid md:grid-cols-3 gap-px bg-border/70 border border-border/70 rounded-3xl overflow-hidden">
+            {VOICES.map((v) => (
+              <figure key={v.name} className="bg-background p-8 flex flex-col">
+                <Quote size={20} className="text-brand" />
+                <blockquote className="mt-5 text-[15px] leading-relaxed flex-1">{v.quote}</blockquote>
+                <figcaption className="mt-7 pt-5 border-t border-border/70">
+                  <div className="text-sm font-medium">{v.name}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{v.role}</div>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
         </div>
-      )}
-      <div className="text-sm text-muted-foreground">{!featured && tagline}</div>
-      <h3 className="text-2xl font-semibold mt-1">{name}</h3>
-      <div className="mt-4 flex items-baseline gap-1">
-        <span className="text-5xl font-bold text-gradient">{price}</span>
-        <span className="text-sm text-muted-foreground">/mo</span>
-      </div>
-      <ul className="mt-6 space-y-3">
-        {features.map(f => (
-          <li key={f} className="flex gap-2 text-sm text-muted-foreground">
-            <Check size={16} className="text-brand mt-0.5 shrink-0"/> {f}
-          </li>
-        ))}
-      </ul>
-      <Link to="/login" className={`mt-7 block text-center py-3 rounded-xl transition ${featured ? "brand-gradient text-brand-foreground" : "glass hover:bg-white/10"}`}>
-        Get Started
-      </Link>
-    </div>
+      </section>
+
+      {/* CLOSING */}
+      <section>
+        <div className="mx-auto max-w-7xl px-4 py-24">
+          <div className="rounded-3xl border border-border/70 p-10 md:p-16 flex flex-col lg:flex-row lg:items-end justify-between gap-10">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl md:text-5xl font-semibold tracking-tight leading-[1.05]">
+                The capital is ready.
+                <br />
+                <span className="font-serif-display italic text-brand">The question is whether you are.</span>
+              </h2>
+              <p className="mt-5 text-muted-foreground leading-relaxed">
+                Open an evaluation, join the academy, or speak to the desk before you commit a single dollar. We would rather turn away a trader who isn't ready than fund one who isn't.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3 shrink-0">
+              <Link to="/login" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-brand text-brand-foreground font-medium hover:opacity-90 transition">
+                Create an account <ArrowRight size={16} />
+              </Link>
+              <Link to="/contact" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl border border-border hover:bg-foreground/5 transition">
+                Talk to the desk
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    </SiteLayout>
   );
 }

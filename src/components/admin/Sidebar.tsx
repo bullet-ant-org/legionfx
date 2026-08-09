@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   LayoutDashboard, Users, ArrowDownToLine, ArrowUpFromLine, Bell, CreditCard,
   Tags, Settings, User2, ChevronsLeft, ChevronsRight, LogOut, X, ShieldCheck,
-  Bot, GraduationCap, Trophy, LineChart, LifeBuoy, FileText,
+  Bot, GraduationCap, Trophy, LineChart, LifeBuoy, FileText, Coins,
 } from "lucide-react";
 import { signOut } from "@/lib/auth";
 import { Modal } from "@/components/dashboard/primitives";
@@ -16,6 +16,7 @@ const nav = [
   { to: "/admin/deposits", label: "Deposits", icon: ArrowDownToLine, desc: "Approve inflows" },
   { to: "/admin/withdrawals", label: "Withdrawals", icon: ArrowUpFromLine, desc: "Approve outflows" },
   { to: "/admin/notify", label: "Notify", icon: Bell, desc: "Broadcast messages" },
+  { to: "/admin/deposit-methods", label: "Deposit Methods", icon: Coins, desc: "Currencies & wallets" },
   { to: "/admin/payments", label: "Payment Options", icon: CreditCard, desc: "Wallets & rails" },
   { to: "/admin/pricing", label: "Pricing Plans", icon: Tags, desc: "Subscriptions & tiers" },
   { to: "/admin/bots", label: "Bots", icon: Bot, desc: "Marketplace ops" },

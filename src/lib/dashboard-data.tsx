@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { api, type ApiWallet, type ApiTransaction, type ApiUserBot, type ApiChallenge, type ApiEnrollment, type ApiSignal, type ApiNotification } from "./api";
+import { api, type ApiWallet, type ApiTransaction, type ApiUserBot, type ApiChallenge, type ApiEnrollment, type ApiSignal, type ApiNotification, type ApiConversation } from "./api";
 import { getSession, type Session } from "./auth";
+
+type ReferralStats = { code: string | null; total: number; earnings: number };
 
 type DashboardData = {
   loading: boolean;
@@ -13,6 +15,8 @@ type DashboardData = {
   enrollments: ApiEnrollment[];
   signals: ApiSignal[];
   notifications: ApiNotification[];
+  conversations: ApiConversation[];
+  referral: ReferralStats | null;
   refresh: () => void;
   markAllNotificationsRead: () => void;
 };
@@ -30,6 +34,8 @@ export function DashboardDataProvider({ children }: { children: ReactNode }) {
   const [enrollments, setEnrollments] = useState<ApiEnrollment[]>([]);
   const [signals, setSignals] = useState<ApiSignal[]>([]);
   const [notifications, setNotifications] = useState<ApiNotification[]>([]);
+  const [conversations, setConversations] = useState<ApiConversation[]>([]);
+  const [referral, setReferral] = useState<ReferralStats | null>(null);
   const [tick, setTick] = useState(0);
 
   const refresh = useCallback(() => setTick((t) => t + 1), []);
@@ -55,9 +61,11 @@ export function DashboardDataProvider({ children }: { children: ReactNode }) {
       api.getMyEnrollments(),
       api.getSignals(),
       api.getNotifications(),
+      api.getConversations(),
+      api.getReferralStats(),
     ]).then((results) => {
       if (cancelled) return;
-      const [w, tx, b, ch, en, sig, notif] = results;
+      const [w, tx, b, ch, en, sig, notif, convos, ref] = results;
       if (w.status === "fulfilled") setWallet(w.value.wallet);
       if (tx.status === "fulfilled") setTransactions(tx.value.transactions);
       if (b.status === "fulfilled") setBots(b.value.bots);
@@ -65,6 +73,8 @@ export function DashboardDataProvider({ children }: { children: ReactNode }) {
       if (en.status === "fulfilled") setEnrollments(en.value.enrollments);
       if (sig.status === "fulfilled") setSignals(sig.value.signals);
       if (notif.status === "fulfilled") setNotifications(notif.value.notifications);
+      if (convos.status === "fulfilled") setConversations(convos.value.conversations);
+      if (ref.status === "fulfilled") setReferral(ref.value);
 
       // If literally everything failed, surface it - almost certainly an
       // auth/CORS/network problem rather than empty-account states.
@@ -86,9 +96,9 @@ export function DashboardDataProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const value = useMemo<DashboardData>(() => ({
-    loading, error, session, wallet, transactions, bots, challenges, enrollments, signals, notifications,
+    loading, error, session, wallet, transactions, bots, challenges, enrollments, signals, notifications, conversations, referral,
     refresh, markAllNotificationsRead,
-  }), [loading, error, session, wallet, transactions, bots, challenges, enrollments, signals, notifications, refresh, markAllNotificationsRead]);
+  }), [loading, error, session, wallet, transactions, bots, challenges, enrollments, signals, notifications, conversations, referral, refresh, markAllNotificationsRead]);
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
 }

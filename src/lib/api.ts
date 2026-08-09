@@ -144,11 +144,20 @@ export type ApiNotification = {
   [key: string]: unknown;
 };
 
+export type ApiConversation = {
+  _id: string;
+  participants: { _id: string; name: string; email: string; avatarUrl?: string; role: string }[];
+  lastMessageAt: string;
+  lastMessage: { body: string; createdAt: string; sender: string } | null;
+  unreadCount: number;
+  [key: string]: unknown;
+};
+
 export const api = {
-  signup: (name: string, email: string, password: string) =>
+  signup: (name: string, email: string, password: string, ref?: string) =>
     request<{ user: ApiUser; token: string }>("/auth/signup", {
       method: "POST",
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, email, password, ref }),
     }),
 
   login: (email: string, password: string) =>
@@ -169,4 +178,6 @@ export const api = {
   getSignals: () => request<{ signals: ApiSignal[] }>("/signals"),
   getNotifications: () => request<{ notifications: ApiNotification[] }>("/notifications"),
   markAllNotificationsRead: () => request<{ message: string }>("/notifications/read-all", { method: "PATCH" }),
+  getReferralStats: () => request<{ code: string | null; total: number; earnings: number }>("/referrals/mine"),
+  getConversations: () => request<{ conversations: ApiConversation[] }>("/messages"),
 };

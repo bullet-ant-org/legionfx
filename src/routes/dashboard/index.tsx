@@ -12,7 +12,7 @@ import {
 import { StatCard, GlassCard, SectionTitle, Counter, StatusPill } from "@/components/dashboard/primitives";
 import { useDashboardData } from "@/lib/dashboard-data";
 import {
-  performance, academy, calendar, market, messages, achievements, referral,
+  performance, academy, calendar, market, achievements,
 } from "@/lib/demo-data";
 
 export const Route = createFileRoute("/dashboard/")({
@@ -24,7 +24,7 @@ type Range = "Daily" | "Weekly" | "Monthly" | "Yearly";
 
 function OverviewPage() {
   const [range, setRange] = useState<Range>("Monthly");
-  const { loading, error, session, wallet, bots, challenges, enrollments, signals, transactions } = useDashboardData();
+  const { loading, error, session, wallet, bots, challenges, enrollments, signals, transactions, conversations, referral } = useDashboardData();
 
   const data = useMemo(() => {
     const map = { Daily: performance.daily, Weekly: performance.weekly, Monthly: performance.monthly, Yearly: performance.yearly };
@@ -344,21 +344,29 @@ function OverviewPage() {
       <div className="grid lg:grid-cols-3 gap-4">
         <GlassCard className="p-5">
           <SectionTitle title="Recent Messages" action={<Link to="/dashboard/messages" className="text-xs text-brand hover:underline">View all</Link>} />
-          <div className="space-y-3">
-            {messages.map((m) => (
-              <div key={m.from} className="flex items-start gap-3 rounded-xl hover:bg-white/[0.03] p-2 -mx-2 cursor-pointer">
-                <div className="h-9 w-9 rounded-xl brand-gradient grid place-items-center text-brand-foreground text-xs font-semibold shrink-0">{m.from[0]}</div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="text-xs font-medium truncate">{m.from}</div>
-                    <div className="text-[10px] text-muted-foreground shrink-0">{m.time}</div>
-                  </div>
-                  <div className="text-[11px] text-muted-foreground truncate">{m.preview}</div>
-                </div>
-                {m.unread && <span className="h-2 w-2 rounded-full bg-brand mt-2 shrink-0" />}
-              </div>
-            ))}
-          </div>
+          {conversations.length === 0 ? (
+            <EmptyState icon={MessageSquare} text="No conversations yet." cta={{ to: "/dashboard/messages", label: "Start a conversation" }} />
+          ) : (
+            <div className="space-y-3">
+              {conversations.slice(0, 5).map((c) => {
+                const other = c.participants.find((p) => p._id !== session?.user?._id) ?? c.participants[0];
+                const label = other?.name ?? "Support";
+                return (
+                  <Link key={c._id} to="/dashboard/messages" className="flex items-start gap-3 rounded-xl hover:bg-white/[0.03] p-2 -mx-2 -my-0 cursor-pointer">
+                    <div className="h-9 w-9 rounded-xl brand-gradient grid place-items-center text-brand-foreground text-xs font-semibold shrink-0">{label[0]?.toUpperCase()}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="text-xs font-medium truncate">{label}</div>
+                        <div className="text-[10px] text-muted-foreground shrink-0">{timeAgo(c.lastMessage?.createdAt ?? c.lastMessageAt)}</div>
+                      </div>
+                      <div className="text-[11px] text-muted-foreground truncate">{c.lastMessage?.body ?? "No messages yet"}</div>
+                    </div>
+                    {c.unreadCount > 0 && <span className="h-2 w-2 rounded-full bg-brand mt-2 shrink-0" />}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </GlassCard>
 
         <GlassCard className="p-5">
@@ -379,22 +387,41 @@ function OverviewPage() {
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-white/[0.03] border border-white/5 p-3">
               <div className="text-[10px] text-muted-foreground">Total Referrals</div>
-              <div className="text-lg font-bold mt-0.5"><Counter to={referral.total} /></div>
+              <div className="text-lg font-bold mt-0.5"><Counter to={referral?.total ?? 0} /></div>
             </div>
             <div className="rounded-xl bg-white/[0.03] border border-white/5 p-3">
               <div className="text-[10px] text-muted-foreground">Earnings</div>
-              <div className="text-lg font-bold mt-0.5 text-emerald-400">$<Counter to={wallet?.referralEarnings ?? referral.earnings} decimals={2} /></div>
+              <div className="text-lg font-bold mt-0.5 text-emerald-400">$<Counter to={referral?.earnings ?? wallet?.referralEarnings ?? 0} decimals={2} /></div>
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 p-2 pl-3">
-            <Users size={14} className="text-brand shrink-0" />
-            <div className="text-[10px] truncate flex-1">{referral.link}</div>
-            <button onClick={() => navigator.clipboard?.writeText(referral.link)} className="px-2 py-1 rounded-lg brand-gradient text-brand-foreground text-[10px] font-medium shrink-0">Copy</button>
-          </div>
+          {referral?.code ? (
+            <div className="mt-4 flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 p-2 pl-3">
+              <Users size={14} className="text-brand shrink-0" />
+              <div className="text-[10px] truncate flex-1">{referralLink(referral.code)}</div>
+              <button onClick={() => navigator.clipboard?.writeText(referralLink(referral.code!))} className="px-2 py-1 rounded-lg brand-gradient text-brand-foreground text-[10px] font-medium shrink-0">Copy</button>
+            </div>
+          ) : (
+            <div className="mt-4 text-[11px] text-muted-foreground">Your referral link will appear here once your account finishes setting up.</div>
+          )}
         </GlassCard>
       </div>
     </div>
   );
+}
+
+function referralLink(code: string) {
+  if (typeof window === "undefined") return `https://legionfx.space/login?ref=${code}`;
+  return `${window.location.origin}/login?ref=${code}`;
+}
+
+function timeAgo(iso: string) {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
 }
 
 function EmptyState({ icon: Icon, text, cta }: { icon: any; text: string; cta?: { to: string; label: string } }) {

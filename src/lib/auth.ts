@@ -61,9 +61,9 @@ export async function signIn(email: string, password: string): Promise<{ session
   }
 }
 
-export async function signUp(name: string, email: string, password: string): Promise<{ session: Session | null; error: string | null }> {
+export async function signUp(name: string, email: string, password: string, ref?: string): Promise<{ session: Session | null; error: string | null }> {
   try {
-    const { user, token } = await api.signup(name, email, password);
+    const { user, token } = await api.signup(name, email, password, ref);
     setToken(token);
     const session = toSession(user);
     persist(session);

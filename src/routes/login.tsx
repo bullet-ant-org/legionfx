@@ -36,7 +36,8 @@ function AuthPage() {
         return;
       }
       setLoading(true);
-      const { session, error: signupError } = await signUp(name, email, password);
+      const refCode = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("ref") || undefined : undefined;
+      const { session, error: signupError } = await signUp(name, email, password, refCode);
       setLoading(false);
       if (!session) {
         setError(signupError || "Unable to create account.");

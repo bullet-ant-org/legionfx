@@ -21,6 +21,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PayIndexRouteImport } from './routes/pay/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as PayCryptoRouteImport } from './routes/pay/crypto'
 import { Route as DashboardWalletRouteImport } from './routes/dashboard/wallet'
 import { Route as DashboardSupportRouteImport } from './routes/dashboard/support'
 import { Route as DashboardSignalsRouteImport } from './routes/dashboard/signals'
@@ -107,6 +108,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRouteRoute,
+} as any)
+const PayCryptoRoute = PayCryptoRouteImport.update({
+  id: '/crypto',
+  path: '/crypto',
+  getParentRoute: () => PayRouteRoute,
 } as any)
 const DashboardWalletRoute = DashboardWalletRouteImport.update({
   id: '/wallet',
@@ -274,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/signals': typeof DashboardSignalsRoute
   '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/wallet': typeof DashboardWalletRoute
+  '/pay/crypto': typeof PayCryptoRoute
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/pay/': typeof PayIndexRoute
@@ -311,6 +318,7 @@ export interface FileRoutesByTo {
   '/dashboard/signals': typeof DashboardSignalsRoute
   '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/wallet': typeof DashboardWalletRoute
+  '/pay/crypto': typeof PayCryptoRoute
   '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/pay': typeof PayIndexRoute
@@ -352,6 +360,7 @@ export interface FileRoutesById {
   '/dashboard/signals': typeof DashboardSignalsRoute
   '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/wallet': typeof DashboardWalletRoute
+  '/pay/crypto': typeof PayCryptoRoute
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/pay/': typeof PayIndexRoute
@@ -394,6 +403,7 @@ export interface FileRouteTypes {
     | '/dashboard/signals'
     | '/dashboard/support'
     | '/dashboard/wallet'
+    | '/pay/crypto'
     | '/admin/'
     | '/dashboard/'
     | '/pay/'
@@ -431,6 +441,7 @@ export interface FileRouteTypes {
     | '/dashboard/signals'
     | '/dashboard/support'
     | '/dashboard/wallet'
+    | '/pay/crypto'
     | '/admin'
     | '/dashboard'
     | '/pay'
@@ -471,6 +482,7 @@ export interface FileRouteTypes {
     | '/dashboard/signals'
     | '/dashboard/support'
     | '/dashboard/wallet'
+    | '/pay/crypto'
     | '/admin/'
     | '/dashboard/'
     | '/pay/'
@@ -574,6 +586,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRouteRoute
+    }
+    '/pay/crypto': {
+      id: '/pay/crypto'
+      path: '/crypto'
+      fullPath: '/pay/crypto'
+      preLoaderRoute: typeof PayCryptoRouteImport
+      parentRoute: typeof PayRouteRoute
     }
     '/dashboard/wallet': {
       id: '/dashboard/wallet'
@@ -835,11 +854,13 @@ const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
 )
 
 interface PayRouteRouteChildren {
+  PayCryptoRoute: typeof PayCryptoRoute
   PayIndexRoute: typeof PayIndexRoute
   PayUnavailableMethodRoute: typeof PayUnavailableMethodRoute
 }
 
 const PayRouteRouteChildren: PayRouteRouteChildren = {
+  PayCryptoRoute: PayCryptoRoute,
   PayIndexRoute: PayIndexRoute,
   PayUnavailableMethodRoute: PayUnavailableMethodRoute,
 }

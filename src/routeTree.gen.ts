@@ -46,6 +46,7 @@ import { Route as AdminDepositMethodsRouteImport } from './routes/admin/deposit-
 import { Route as AdminBotsRouteImport } from './routes/admin/bots'
 import { Route as AdminAuditRouteImport } from './routes/admin/audit'
 import { Route as AdminAcademyRouteImport } from './routes/admin/academy'
+import { Route as PayUnavailableMethodRouteImport } from './routes/pay/unavailable.$method'
 
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
@@ -232,6 +233,11 @@ const AdminAcademyRoute = AdminAcademyRouteImport.update({
   path: '/academy',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const PayUnavailableMethodRoute = PayUnavailableMethodRouteImport.update({
+  id: '/unavailable/$method',
+  path: '/unavailable/$method',
+  getParentRoute: () => PayRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -271,6 +277,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/pay/': typeof PayIndexRoute
+  '/pay/unavailable/$method': typeof PayUnavailableMethodRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -307,6 +314,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/pay': typeof PayIndexRoute
+  '/pay/unavailable/$method': typeof PayUnavailableMethodRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -347,6 +355,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/pay/': typeof PayIndexRoute
+  '/pay/unavailable/$method': typeof PayUnavailableMethodRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -388,6 +397,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/dashboard/'
     | '/pay/'
+    | '/pay/unavailable/$method'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -424,6 +434,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/pay'
+    | '/pay/unavailable/$method'
   id:
     | '__root__'
     | '/'
@@ -463,6 +474,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/dashboard/'
     | '/pay/'
+    | '/pay/unavailable/$method'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -738,6 +750,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAcademyRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/pay/unavailable/$method': {
+      id: '/pay/unavailable/$method'
+      path: '/unavailable/$method'
+      fullPath: '/pay/unavailable/$method'
+      preLoaderRoute: typeof PayUnavailableMethodRouteImport
+      parentRoute: typeof PayRouteRoute
+    }
   }
 }
 
@@ -817,10 +836,12 @@ const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
 
 interface PayRouteRouteChildren {
   PayIndexRoute: typeof PayIndexRoute
+  PayUnavailableMethodRoute: typeof PayUnavailableMethodRoute
 }
 
 const PayRouteRouteChildren: PayRouteRouteChildren = {
   PayIndexRoute: PayIndexRoute,
+  PayUnavailableMethodRoute: PayUnavailableMethodRoute,
 }
 
 const PayRouteRouteWithChildren = PayRouteRoute._addFileChildren(

@@ -9,66 +9,51 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ServicesRouteImport } from './routes/services'
-import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as ContactRouteImport } from './routes/contact'
-import { Route as AboutRouteImport } from './routes/about'
-import { Route as PayRouteRouteImport } from './routes/pay/route'
-import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
-import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PayIndexRouteImport } from './routes/pay/index'
-import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as PayRouteRouteImport } from './routes/pay/route'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as ServicesRouteImport } from './routes/services'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
-import { Route as PayProcessingRouteImport } from './routes/pay/processing'
-import { Route as PayFailedRouteImport } from './routes/pay/failed'
-import { Route as PayCryptoRouteImport } from './routes/pay/crypto'
-import { Route as DashboardWalletRouteImport } from './routes/dashboard/wallet'
-import { Route as DashboardSupportRouteImport } from './routes/dashboard/support'
-import { Route as DashboardSignalsRouteImport } from './routes/dashboard/signals'
-import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
-import { Route as DashboardSecurityRouteImport } from './routes/dashboard/security'
-import { Route as DashboardPropFirmRouteImport } from './routes/dashboard/prop-firm'
-import { Route as DashboardProfileRouteImport } from './routes/dashboard/profile'
-import { Route as DashboardMessagesRouteImport } from './routes/dashboard/messages'
-import { Route as DashboardBotsRouteImport } from './routes/dashboard/bots'
-import { Route as DashboardAcademyRouteImport } from './routes/dashboard/academy'
-import { Route as AdminWithdrawalsRouteImport } from './routes/admin/withdrawals'
-import { Route as AdminUsersRouteImport } from './routes/admin/users'
-import { Route as AdminSupportRouteImport } from './routes/admin/support'
-import { Route as AdminSignalsRouteImport } from './routes/admin/signals'
-import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
-import { Route as AdminPropFirmRouteImport } from './routes/admin/prop-firm'
-import { Route as AdminProfileRouteImport } from './routes/admin/profile'
-import { Route as AdminPricingRouteImport } from './routes/admin/pricing'
-import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
-import { Route as AdminNotifyRouteImport } from './routes/admin/notify'
-import { Route as AdminDepositsRouteImport } from './routes/admin/deposits'
-import { Route as AdminDepositMethodsRouteImport } from './routes/admin/deposit-methods'
-import { Route as AdminBotsRouteImport } from './routes/admin/bots'
-import { Route as AdminAuditRouteImport } from './routes/admin/audit'
 import { Route as AdminAcademyRouteImport } from './routes/admin/academy'
+import { Route as AdminAuditRouteImport } from './routes/admin/audit'
+import { Route as AdminBotsRouteImport } from './routes/admin/bots'
+import { Route as AdminDepositMethodsRouteImport } from './routes/admin/deposit-methods'
+import { Route as AdminDepositsRouteImport } from './routes/admin/deposits'
+import { Route as AdminNotifyRouteImport } from './routes/admin/notify'
+import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
+import { Route as AdminPricingRouteImport } from './routes/admin/pricing'
+import { Route as AdminProfileRouteImport } from './routes/admin/profile'
+import { Route as AdminPropFirmRouteImport } from './routes/admin/prop-firm'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
+import { Route as AdminSignalsRouteImport } from './routes/admin/signals'
+import { Route as AdminSupportRouteImport } from './routes/admin/support'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminWithdrawalsRouteImport } from './routes/admin/withdrawals'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as DashboardAcademyRouteImport } from './routes/dashboard/academy'
+import { Route as DashboardBotsRouteImport } from './routes/dashboard/bots'
+import { Route as DashboardMessagesRouteImport } from './routes/dashboard/messages'
+import { Route as DashboardProfileRouteImport } from './routes/dashboard/profile'
+import { Route as DashboardPropFirmRouteImport } from './routes/dashboard/prop-firm'
+import { Route as DashboardSecurityRouteImport } from './routes/dashboard/security'
+import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
+import { Route as DashboardSignalsRouteImport } from './routes/dashboard/signals'
+import { Route as DashboardSupportRouteImport } from './routes/dashboard/support'
+import { Route as DashboardWalletRouteImport } from './routes/dashboard/wallet'
+import { Route as PayIndexRouteImport } from './routes/pay/index'
+import { Route as PayCryptoRouteImport } from './routes/pay/crypto'
+import { Route as PayFailedRouteImport } from './routes/pay/failed'
+import { Route as PayProcessingRouteImport } from './routes/pay/processing'
 import { Route as PayUnavailableMethodRouteImport } from './routes/pay/unavailable.$method'
 
-const ServicesRoute = ServicesRouteImport.update({
-  id: '/services',
-  path: '/services',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PricingRoute = PricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContactRoute = ContactRouteImport.update({
-  id: '/contact',
-  path: '/contact',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -76,9 +61,14 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PayRouteRoute = PayRouteRouteImport.update({
-  id: '/pay',
-  path: '/pay',
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRouteRoute = DashboardRouteRouteImport.update({
@@ -86,159 +76,34 @@ const DashboardRouteRoute = DashboardRouteRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminRouteRoute = AdminRouteRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const PayRouteRoute = PayRouteRouteImport.update({
+  id: '/pay',
+  path: '/pay',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PayIndexRoute = PayIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => PayRouteRoute,
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardIndexRoute = DashboardIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => DashboardRouteRoute,
+const ServicesRoute = ServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
-const PayProcessingRoute = PayProcessingRouteImport.update({
-  id: '/processing',
-  path: '/processing',
-  getParentRoute: () => PayRouteRoute,
-} as any)
-const PayFailedRoute = PayFailedRouteImport.update({
-  id: '/failed',
-  path: '/failed',
-  getParentRoute: () => PayRouteRoute,
-} as any)
-const PayCryptoRoute = PayCryptoRouteImport.update({
-  id: '/crypto',
-  path: '/crypto',
-  getParentRoute: () => PayRouteRoute,
-} as any)
-const DashboardWalletRoute = DashboardWalletRouteImport.update({
-  id: '/wallet',
-  path: '/wallet',
-  getParentRoute: () => DashboardRouteRoute,
-} as any)
-const DashboardSupportRoute = DashboardSupportRouteImport.update({
-  id: '/support',
-  path: '/support',
-  getParentRoute: () => DashboardRouteRoute,
-} as any)
-const DashboardSignalsRoute = DashboardSignalsRouteImport.update({
-  id: '/signals',
-  path: '/signals',
-  getParentRoute: () => DashboardRouteRoute,
-} as any)
-const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => DashboardRouteRoute,
-} as any)
-const DashboardSecurityRoute = DashboardSecurityRouteImport.update({
-  id: '/security',
-  path: '/security',
-  getParentRoute: () => DashboardRouteRoute,
-} as any)
-const DashboardPropFirmRoute = DashboardPropFirmRouteImport.update({
-  id: '/prop-firm',
-  path: '/prop-firm',
-  getParentRoute: () => DashboardRouteRoute,
-} as any)
-const DashboardProfileRoute = DashboardProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => DashboardRouteRoute,
-} as any)
-const DashboardMessagesRoute = DashboardMessagesRouteImport.update({
-  id: '/messages',
-  path: '/messages',
-  getParentRoute: () => DashboardRouteRoute,
-} as any)
-const DashboardBotsRoute = DashboardBotsRouteImport.update({
-  id: '/bots',
-  path: '/bots',
-  getParentRoute: () => DashboardRouteRoute,
-} as any)
-const DashboardAcademyRoute = DashboardAcademyRouteImport.update({
+const AdminAcademyRoute = AdminAcademyRouteImport.update({
   id: '/academy',
   path: '/academy',
-  getParentRoute: () => DashboardRouteRoute,
-} as any)
-const AdminWithdrawalsRoute = AdminWithdrawalsRouteImport.update({
-  id: '/withdrawals',
-  path: '/withdrawals',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminSupportRoute = AdminSupportRouteImport.update({
-  id: '/support',
-  path: '/support',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminSignalsRoute = AdminSignalsRouteImport.update({
-  id: '/signals',
-  path: '/signals',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminSettingsRoute = AdminSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminPropFirmRoute = AdminPropFirmRouteImport.update({
-  id: '/prop-firm',
-  path: '/prop-firm',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminProfileRoute = AdminProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminPricingRoute = AdminPricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
-  id: '/payments',
-  path: '/payments',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminNotifyRoute = AdminNotifyRouteImport.update({
-  id: '/notify',
-  path: '/notify',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminDepositsRoute = AdminDepositsRouteImport.update({
-  id: '/deposits',
-  path: '/deposits',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminDepositMethodsRoute = AdminDepositMethodsRouteImport.update({
-  id: '/deposit-methods',
-  path: '/deposit-methods',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminBotsRoute = AdminBotsRouteImport.update({
-  id: '/bots',
-  path: '/bots',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminAuditRoute = AdminAuditRouteImport.update({
@@ -246,10 +111,145 @@ const AdminAuditRoute = AdminAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => AdminRouteRoute,
 } as any)
-const AdminAcademyRoute = AdminAcademyRouteImport.update({
+const AdminBotsRoute = AdminBotsRouteImport.update({
+  id: '/bots',
+  path: '/bots',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminDepositMethodsRoute = AdminDepositMethodsRouteImport.update({
+  id: '/deposit-methods',
+  path: '/deposit-methods',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminDepositsRoute = AdminDepositsRouteImport.update({
+  id: '/deposits',
+  path: '/deposits',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminNotifyRoute = AdminNotifyRouteImport.update({
+  id: '/notify',
+  path: '/notify',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPricingRoute = AdminPricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminProfileRoute = AdminProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPropFirmRoute = AdminPropFirmRouteImport.update({
+  id: '/prop-firm',
+  path: '/prop-firm',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminSignalsRoute = AdminSignalsRouteImport.update({
+  id: '/signals',
+  path: '/signals',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminSupportRoute = AdminSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminWithdrawalsRoute = AdminWithdrawalsRouteImport.update({
+  id: '/withdrawals',
+  path: '/withdrawals',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardAcademyRoute = DashboardAcademyRouteImport.update({
   id: '/academy',
   path: '/academy',
-  getParentRoute: () => AdminRouteRoute,
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardBotsRoute = DashboardBotsRouteImport.update({
+  id: '/bots',
+  path: '/bots',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardMessagesRoute = DashboardMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardProfileRoute = DashboardProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardPropFirmRoute = DashboardPropFirmRouteImport.update({
+  id: '/prop-firm',
+  path: '/prop-firm',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardSecurityRoute = DashboardSecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardSignalsRoute = DashboardSignalsRouteImport.update({
+  id: '/signals',
+  path: '/signals',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardSupportRoute = DashboardSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardWalletRoute = DashboardWalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const PayIndexRoute = PayIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PayRouteRoute,
+} as any)
+const PayCryptoRoute = PayCryptoRouteImport.update({
+  id: '/crypto',
+  path: '/crypto',
+  getParentRoute: () => PayRouteRoute,
+} as any)
+const PayFailedRoute = PayFailedRouteImport.update({
+  id: '/failed',
+  path: '/failed',
+  getParentRoute: () => PayRouteRoute,
+} as any)
+const PayProcessingRoute = PayProcessingRouteImport.update({
+  id: '/processing',
+  path: '/processing',
+  getParentRoute: () => PayRouteRoute,
 } as any)
 const PayUnavailableMethodRoute = PayUnavailableMethodRouteImport.update({
   id: '/unavailable/$method',
@@ -527,32 +527,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/services': {
-      id: '/services'
-      path: '/services'
-      fullPath: '/services'
-      preLoaderRoute: typeof ServicesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pricing': {
-      id: '/pricing'
-      path: '/pricing'
-      fullPath: '/pricing'
-      preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contact': {
-      id: '/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof ContactRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -562,11 +541,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/pay': {
-      id: '/pay'
-      path: '/pay'
-      fullPath: '/pay'
-      preLoaderRoute: typeof PayRouteRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -576,33 +562,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/pay': {
+      id: '/pay'
+      path: '/pay'
+      fullPath: '/pay'
+      preLoaderRoute: typeof PayRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/pay/': {
-      id: '/pay/'
-      path: '/'
-      fullPath: '/pay/'
-      preLoaderRoute: typeof PayIndexRouteImport
-      parentRoute: typeof PayRouteRoute
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/dashboard/': {
-      id: '/dashboard/'
-      path: '/'
-      fullPath: '/dashboard/'
-      preLoaderRoute: typeof DashboardIndexRouteImport
-      parentRoute: typeof DashboardRouteRoute
+    '/services': {
+      id: '/services'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof ServicesRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin/': {
       id: '/admin/'
@@ -611,186 +597,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
-    '/pay/processing': {
-      id: '/pay/processing'
-      path: '/processing'
-      fullPath: '/pay/processing'
-      preLoaderRoute: typeof PayProcessingRouteImport
-      parentRoute: typeof PayRouteRoute
-    }
-    '/pay/failed': {
-      id: '/pay/failed'
-      path: '/failed'
-      fullPath: '/pay/failed'
-      preLoaderRoute: typeof PayFailedRouteImport
-      parentRoute: typeof PayRouteRoute
-    }
-    '/pay/crypto': {
-      id: '/pay/crypto'
-      path: '/crypto'
-      fullPath: '/pay/crypto'
-      preLoaderRoute: typeof PayCryptoRouteImport
-      parentRoute: typeof PayRouteRoute
-    }
-    '/dashboard/wallet': {
-      id: '/dashboard/wallet'
-      path: '/wallet'
-      fullPath: '/dashboard/wallet'
-      preLoaderRoute: typeof DashboardWalletRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/dashboard/support': {
-      id: '/dashboard/support'
-      path: '/support'
-      fullPath: '/dashboard/support'
-      preLoaderRoute: typeof DashboardSupportRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/dashboard/signals': {
-      id: '/dashboard/signals'
-      path: '/signals'
-      fullPath: '/dashboard/signals'
-      preLoaderRoute: typeof DashboardSignalsRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/dashboard/settings': {
-      id: '/dashboard/settings'
-      path: '/settings'
-      fullPath: '/dashboard/settings'
-      preLoaderRoute: typeof DashboardSettingsRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/dashboard/security': {
-      id: '/dashboard/security'
-      path: '/security'
-      fullPath: '/dashboard/security'
-      preLoaderRoute: typeof DashboardSecurityRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/dashboard/prop-firm': {
-      id: '/dashboard/prop-firm'
-      path: '/prop-firm'
-      fullPath: '/dashboard/prop-firm'
-      preLoaderRoute: typeof DashboardPropFirmRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/dashboard/profile': {
-      id: '/dashboard/profile'
-      path: '/profile'
-      fullPath: '/dashboard/profile'
-      preLoaderRoute: typeof DashboardProfileRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/dashboard/messages': {
-      id: '/dashboard/messages'
-      path: '/messages'
-      fullPath: '/dashboard/messages'
-      preLoaderRoute: typeof DashboardMessagesRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/dashboard/bots': {
-      id: '/dashboard/bots'
-      path: '/bots'
-      fullPath: '/dashboard/bots'
-      preLoaderRoute: typeof DashboardBotsRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/dashboard/academy': {
-      id: '/dashboard/academy'
+    '/admin/academy': {
+      id: '/admin/academy'
       path: '/academy'
-      fullPath: '/dashboard/academy'
-      preLoaderRoute: typeof DashboardAcademyRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/admin/withdrawals': {
-      id: '/admin/withdrawals'
-      path: '/withdrawals'
-      fullPath: '/admin/withdrawals'
-      preLoaderRoute: typeof AdminWithdrawalsRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/users': {
-      id: '/admin/users'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/support': {
-      id: '/admin/support'
-      path: '/support'
-      fullPath: '/admin/support'
-      preLoaderRoute: typeof AdminSupportRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/signals': {
-      id: '/admin/signals'
-      path: '/signals'
-      fullPath: '/admin/signals'
-      preLoaderRoute: typeof AdminSignalsRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/settings': {
-      id: '/admin/settings'
-      path: '/settings'
-      fullPath: '/admin/settings'
-      preLoaderRoute: typeof AdminSettingsRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/prop-firm': {
-      id: '/admin/prop-firm'
-      path: '/prop-firm'
-      fullPath: '/admin/prop-firm'
-      preLoaderRoute: typeof AdminPropFirmRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/profile': {
-      id: '/admin/profile'
-      path: '/profile'
-      fullPath: '/admin/profile'
-      preLoaderRoute: typeof AdminProfileRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/pricing': {
-      id: '/admin/pricing'
-      path: '/pricing'
-      fullPath: '/admin/pricing'
-      preLoaderRoute: typeof AdminPricingRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/payments': {
-      id: '/admin/payments'
-      path: '/payments'
-      fullPath: '/admin/payments'
-      preLoaderRoute: typeof AdminPaymentsRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/notify': {
-      id: '/admin/notify'
-      path: '/notify'
-      fullPath: '/admin/notify'
-      preLoaderRoute: typeof AdminNotifyRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/deposits': {
-      id: '/admin/deposits'
-      path: '/deposits'
-      fullPath: '/admin/deposits'
-      preLoaderRoute: typeof AdminDepositsRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/deposit-methods': {
-      id: '/admin/deposit-methods'
-      path: '/deposit-methods'
-      fullPath: '/admin/deposit-methods'
-      preLoaderRoute: typeof AdminDepositMethodsRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/bots': {
-      id: '/admin/bots'
-      path: '/bots'
-      fullPath: '/admin/bots'
-      preLoaderRoute: typeof AdminBotsRouteImport
+      fullPath: '/admin/academy'
+      preLoaderRoute: typeof AdminAcademyRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/audit': {
@@ -800,12 +611,201 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuditRouteImport
       parentRoute: typeof AdminRouteRoute
     }
-    '/admin/academy': {
-      id: '/admin/academy'
-      path: '/academy'
-      fullPath: '/admin/academy'
-      preLoaderRoute: typeof AdminAcademyRouteImport
+    '/admin/bots': {
+      id: '/admin/bots'
+      path: '/bots'
+      fullPath: '/admin/bots'
+      preLoaderRoute: typeof AdminBotsRouteImport
       parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/deposit-methods': {
+      id: '/admin/deposit-methods'
+      path: '/deposit-methods'
+      fullPath: '/admin/deposit-methods'
+      preLoaderRoute: typeof AdminDepositMethodsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/deposits': {
+      id: '/admin/deposits'
+      path: '/deposits'
+      fullPath: '/admin/deposits'
+      preLoaderRoute: typeof AdminDepositsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/notify': {
+      id: '/admin/notify'
+      path: '/notify'
+      fullPath: '/admin/notify'
+      preLoaderRoute: typeof AdminNotifyRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/pricing': {
+      id: '/admin/pricing'
+      path: '/pricing'
+      fullPath: '/admin/pricing'
+      preLoaderRoute: typeof AdminPricingRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/profile': {
+      id: '/admin/profile'
+      path: '/profile'
+      fullPath: '/admin/profile'
+      preLoaderRoute: typeof AdminProfileRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/prop-firm': {
+      id: '/admin/prop-firm'
+      path: '/prop-firm'
+      fullPath: '/admin/prop-firm'
+      preLoaderRoute: typeof AdminPropFirmRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/signals': {
+      id: '/admin/signals'
+      path: '/signals'
+      fullPath: '/admin/signals'
+      preLoaderRoute: typeof AdminSignalsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/support': {
+      id: '/admin/support'
+      path: '/support'
+      fullPath: '/admin/support'
+      preLoaderRoute: typeof AdminSupportRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/withdrawals': {
+      id: '/admin/withdrawals'
+      path: '/withdrawals'
+      fullPath: '/admin/withdrawals'
+      preLoaderRoute: typeof AdminWithdrawalsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/academy': {
+      id: '/dashboard/academy'
+      path: '/academy'
+      fullPath: '/dashboard/academy'
+      preLoaderRoute: typeof DashboardAcademyRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/bots': {
+      id: '/dashboard/bots'
+      path: '/bots'
+      fullPath: '/dashboard/bots'
+      preLoaderRoute: typeof DashboardBotsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/messages': {
+      id: '/dashboard/messages'
+      path: '/messages'
+      fullPath: '/dashboard/messages'
+      preLoaderRoute: typeof DashboardMessagesRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/profile': {
+      id: '/dashboard/profile'
+      path: '/profile'
+      fullPath: '/dashboard/profile'
+      preLoaderRoute: typeof DashboardProfileRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/prop-firm': {
+      id: '/dashboard/prop-firm'
+      path: '/prop-firm'
+      fullPath: '/dashboard/prop-firm'
+      preLoaderRoute: typeof DashboardPropFirmRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/security': {
+      id: '/dashboard/security'
+      path: '/security'
+      fullPath: '/dashboard/security'
+      preLoaderRoute: typeof DashboardSecurityRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/settings': {
+      id: '/dashboard/settings'
+      path: '/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/signals': {
+      id: '/dashboard/signals'
+      path: '/signals'
+      fullPath: '/dashboard/signals'
+      preLoaderRoute: typeof DashboardSignalsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/support': {
+      id: '/dashboard/support'
+      path: '/support'
+      fullPath: '/dashboard/support'
+      preLoaderRoute: typeof DashboardSupportRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/wallet': {
+      id: '/dashboard/wallet'
+      path: '/wallet'
+      fullPath: '/dashboard/wallet'
+      preLoaderRoute: typeof DashboardWalletRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/pay/': {
+      id: '/pay/'
+      path: '/'
+      fullPath: '/pay/'
+      preLoaderRoute: typeof PayIndexRouteImport
+      parentRoute: typeof PayRouteRoute
+    }
+    '/pay/crypto': {
+      id: '/pay/crypto'
+      path: '/crypto'
+      fullPath: '/pay/crypto'
+      preLoaderRoute: typeof PayCryptoRouteImport
+      parentRoute: typeof PayRouteRoute
+    }
+    '/pay/failed': {
+      id: '/pay/failed'
+      path: '/failed'
+      fullPath: '/pay/failed'
+      preLoaderRoute: typeof PayFailedRouteImport
+      parentRoute: typeof PayRouteRoute
+    }
+    '/pay/processing': {
+      id: '/pay/processing'
+      path: '/processing'
+      fullPath: '/pay/processing'
+      preLoaderRoute: typeof PayProcessingRouteImport
+      parentRoute: typeof PayRouteRoute
     }
     '/pay/unavailable/$method': {
       id: '/pay/unavailable/$method'
@@ -925,3 +925,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

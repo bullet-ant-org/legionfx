@@ -2,22 +2,30 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, Copy, Check, AlertTriangle } from "lucide-react";
-import { getPaySession, loadDepositMethods, updatePaySession, type DepositMethod } from "@/lib/deposit-methods";
+import { getPaySession, updatePaySession } from "@/lib/deposit-methods";
+import { api, ApiError, type ApiDepositMethod } from "@/lib/api";
 
 export const Route = createFileRoute("/pay/crypto")({ component: CryptoPage });
 
 function CryptoPage() {
   const navigate = useNavigate();
-  const [methods, setMethods] = useState<DepositMethod[]>([]);
-  const [selected, setSelected] = useState<DepositMethod | null>(null);
+  const [methods, setMethods] = useState<ApiDepositMethod[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<ApiDepositMethod | null>(null);
   const [session, setSession] = useState({ amount: 0, reference: "" });
   const [copied, setCopied] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const live = loadDepositMethods().filter((m) => m.enabled);
-    setMethods(live);
-    setSelected(live[0] ?? null);
     setSession(getPaySession());
+    api.getDepositMethods()
+      .then((r) => {
+        setMethods(r.methods);
+        setSelected(r.methods[0] ?? null);
+      })
+      .catch((err) => setLoadError(err instanceof ApiError ? err.message : "Could not load payment methods"))
+      .finally(() => setLoading(false));
   }, []);
 
   const copy = async () => {
@@ -32,10 +40,22 @@ function CryptoPage() {
     }
   };
 
-  const confirm = () => {
+  const confirm = async () => {
     if (!selected) return;
-    updatePaySession({ methodId: selected.id });
-    navigate({ to: "/pay/processing" });
+    setSubmitting(true);
+    try {
+      await api.submitDeposit(
+        session.amount,
+        `${selected.symbol} (${selected.network})`,
+        `Ref ${session.reference} — sent to ${selected.address}`,
+      );
+      updatePaySession({ methodId: selected._id });
+      navigate({ to: "/pay/processing" });
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Could not submit deposit — please try again");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -58,7 +78,11 @@ function CryptoPage() {
           </div>
         </div>
 
-        {methods.length === 0 ? (
+        {loading ? (
+          <div className="p-8 text-center text-sm text-muted-foreground">Loading payment methods…</div>
+        ) : loadError ? (
+          <div className="p-8 text-center text-sm text-rose-400">{loadError}</div>
+        ) : methods.length === 0 ? (
           <div className="p-8 text-center text-sm text-muted-foreground">
             No cryptocurrency is currently enabled for deposits. Please contact support.
           </div>
@@ -69,11 +93,11 @@ function CryptoPage() {
               <div className="mt-3 flex flex-wrap gap-2">
                 {methods.map((m) => (
                   <button
-                    key={m.id}
+                    key={m._id}
                     data-no-toast
                     onClick={() => setSelected(m)}
                     className={`px-3.5 py-2.5 rounded-xl border text-sm transition ${
-                      selected?.id === m.id ? "border-brand bg-brand/10 text-foreground" : "border-border text-muted-foreground hover:bg-foreground/5"
+                      selected?._id === m._id ? "border-brand bg-brand/10 text-foreground" : "border-border text-muted-foreground hover:bg-foreground/5"
                     }`}
                   >
                     <span className="font-medium">{m.symbol}</span>
@@ -109,9 +133,10 @@ function CryptoPage() {
                   <button
                     data-no-toast
                     onClick={confirm}
-                    className="px-5 py-3.5 rounded-xl bg-brand text-brand-foreground text-sm font-medium hover:opacity-90 transition"
+                    disabled={submitting}
+                    className="px-5 py-3.5 rounded-xl bg-brand text-brand-foreground text-sm font-medium hover:opacity-90 transition disabled:opacity-60"
                   >
-                    I have made the transfer
+                    {submitting ? "Submitting…" : "I have made the transfer"}
                   </button>
                   <Link to="/pay" className="px-5 py-3.5 rounded-xl border border-border text-sm text-center hover:bg-foreground/5 transition">
                     Back

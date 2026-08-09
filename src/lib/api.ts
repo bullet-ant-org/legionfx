@@ -136,6 +136,19 @@ export type ApiSignal = {
   [key: string]: unknown;
 };
 
+export type ApiDepositMethod = {
+  _id: string;
+  currency: string;
+  symbol: string;
+  network: string;
+  address: string;
+  min: number;
+  max: number;
+  confirmations: number;
+  enabled: boolean;
+  [key: string]: unknown;
+};
+
 export type ApiNotification = {
   _id: string;
   title: string;
@@ -180,4 +193,36 @@ export const api = {
   markAllNotificationsRead: () => request<{ message: string }>("/notifications/read-all", { method: "PATCH" }),
   getReferralStats: () => request<{ code: string | null; total: number; earnings: number }>("/referrals/mine"),
   getConversations: () => request<{ conversations: ApiConversation[] }>("/messages"),
+
+  // Deposit methods (crypto wallets configured by the admin)
+  getDepositMethods: () => request<{ methods: ApiDepositMethod[] }>("/wallet/deposit-methods"),
+  adminListDepositMethods: () => request<{ methods: ApiDepositMethod[] }>("/admin/deposit-methods"),
+  adminCreateDepositMethod: (data: Omit<ApiDepositMethod, "_id" | "enabled"> & { enabled?: boolean }) =>
+    request<{ method: ApiDepositMethod }>("/admin/deposit-methods", { method: "POST", body: JSON.stringify(data) }),
+  adminUpdateDepositMethod: (id: string, data: Partial<Omit<ApiDepositMethod, "_id">>) =>
+    request<{ method: ApiDepositMethod }>(`/admin/deposit-methods/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  adminToggleDepositMethod: (id: string) =>
+    request<{ method: ApiDepositMethod }>(`/admin/deposit-methods/${id}/toggle`, { method: "PATCH" }),
+  adminDeleteDepositMethod: (id: string) =>
+    request<{ message: string }>(`/admin/deposit-methods/${id}`, { method: "DELETE" }),
+
+  // Wallet deposit submission (used by the /pay checkout when the user
+  // confirms they've sent funds).
+  submitDeposit: (amount: number, method: string, note?: string) =>
+    request<{ transaction: ApiTransaction; message: string }>("/wallet/deposit", {
+      method: "POST",
+      body: JSON.stringify({ amount, method, note }),
+    }),
+
+  withdraw: (amount: number, method: string) =>
+    request<{ transaction: ApiTransaction; wallet: ApiWallet; message: string }>("/wallet/withdraw", {
+      method: "POST",
+      body: JSON.stringify({ amount, method }),
+    }),
+
+  transfer: (amount: number, from: string, to: string) =>
+    request<{ transaction: ApiTransaction; wallet: ApiWallet }>("/wallet/transfer", {
+      method: "POST",
+      body: JSON.stringify({ amount, from, to }),
+    }),
 };

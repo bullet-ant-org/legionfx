@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { startPaySession } from "@/lib/deposit-methods";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { motion } from "framer-motion";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -9,16 +10,15 @@ import {
 import {
   Wallet as WalletIcon, ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight, Lock,
   TrendingUp, Gift, ChevronRight, Plus, Edit, Trash2, Check, ShieldCheck, Key,
-  CreditCard, Bitcoin, Activity, Download, Filter, X, Bot, Trophy, GraduationCap,
-  LineChart as LineIcon, Sparkles, Copy,
+  CreditCard, Bitcoin, Activity, Download, Bot, Trophy, GraduationCap,
+  LineChart as LineIcon, Sparkles,
 } from "lucide-react";
 import {
-  GlassCard, StatCard, SectionTitle, Counter, StatusPill, Modal, Field, inputCls,
+  GlassCard, StatCard, SectionTitle, StatusPill, Modal, Field, inputCls,
 } from "@/components/dashboard/primitives";
-import {
-  wallet, performance, portfolioBreakdown, transactions, paymentMethods, market,
-  activeBots, propFirm, academy, referral,
-} from "@/lib/demo-data";
+import { performance, portfolioBreakdown, paymentMethods, market } from "@/lib/demo-data";
+import { useDashboardData } from "@/lib/dashboard-data";
+import { api, ApiError, type ApiTransaction } from "@/lib/api";
 
 export const Route = createFileRoute("/dashboard/wallet")({
   ssr: false,
@@ -29,9 +29,10 @@ type Range = "Today" | "7D" | "30D" | "3M" | "1Y" | "All";
 
 function WalletPage() {
   const [modal, setModal] = useState<null | "deposit" | "withdraw" | "transfer">(null);
-  const [selectedTx, setSelectedTx] = useState<(typeof transactions)[number] | null>(null);
+  const [selectedTx, setSelectedTx] = useState<ApiTransaction | null>(null);
   const [filter, setFilter] = useState<string>("All");
   const [range, setRange] = useState<Range>("30D");
+  const { loading, session, wallet, transactions, bots, challenges, enrollments, referral, refresh } = useDashboardData();
 
   const data = useMemo(() => {
     const map: Record<Range, typeof performance.daily> = {
@@ -47,8 +48,24 @@ function WalletPage() {
 
   const filteredTx = useMemo(
     () => (filter === "All" ? transactions : transactions.filter((t) => t.type === filter)),
-    [filter],
+    [filter, transactions],
   );
+
+  const totalPortfolio = (wallet?.available ?? 0) + (wallet?.locked ?? 0);
+  const primaryChallenge = challenges[0] ?? null;
+  const totalBotProfit = bots.reduce((a, b) => a + (b.profit || 0), 0);
+  const primaryEnrollment = enrollments[0] ?? null;
+
+  const breakdown = useMemo(() => {
+    const rows = [
+      { name: "Available", value: wallet?.available ?? 0, color: "oklch(0.78 0.21 55)" },
+      { name: "Locked (Prop Firm)", value: wallet?.locked ?? 0, color: "oklch(0.72 0.14 190)" },
+      { name: "Bot Profit", value: Math.max(totalBotProfit, 0), color: "oklch(0.65 0.2 300)" },
+      { name: "Referral Earnings", value: referral?.earnings ?? wallet?.referralEarnings ?? 0, color: "oklch(0.75 0.18 140)" },
+      { name: "Bonus", value: wallet?.bonusBalance ?? 0, color: "oklch(0.8 0.15 90)" },
+    ].filter((r) => r.value > 0);
+    return rows.length ? rows : portfolioBreakdown;
+  }, [wallet, totalBotProfit, referral]);
 
   return (
     <div className="space-y-6">
@@ -73,12 +90,18 @@ function WalletPage() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
-        <StatCard label="Portfolio Value" value={wallet.totalPortfolio} prefix="$" decimals={2} delta={`+${wallet.todayChangePct}% today`} icon={<TrendingUp size={14} />} />
-        <StatCard label="Available" value={wallet.available} prefix="$" decimals={2} delta="Spendable" icon={<WalletIcon size={14} />} />
-        <StatCard label="Locked" value={wallet.locked} prefix="$" decimals={2} delta="In challenges" trend="down" icon={<Lock size={14} />} />
-        <StatCard label="Total Profit" value={wallet.totalProfit} prefix="$" decimals={2} delta="+18.4% YTD" icon={<TrendingUp size={14} />} />
-        <StatCard label="Pending W/D" value={wallet.pendingWithdrawals} prefix="$" decimals={2} delta="1-3 days" trend="down" icon={<ArrowUpFromLine size={14} />} />
-        <StatCard label="Referrals" value={wallet.referralEarnings} prefix="$" decimals={2} delta="+$184 this wk" icon={<Gift size={14} />} />
+        {loading ? (
+          Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-24 rounded-2xl glass animate-pulse" />)
+        ) : (
+          <>
+            <StatCard label="Portfolio Value" value={totalPortfolio} prefix="$" decimals={2} icon={<TrendingUp size={14} />} />
+            <StatCard label="Available" value={wallet?.available ?? 0} prefix="$" decimals={2} delta="Spendable" icon={<WalletIcon size={14} />} />
+            <StatCard label="Locked" value={wallet?.locked ?? 0} prefix="$" decimals={2} delta="In challenges" trend="down" icon={<Lock size={14} />} />
+            <StatCard label="Total Profit" value={wallet?.totalProfit ?? 0} prefix="$" decimals={2} icon={<TrendingUp size={14} />} />
+            <StatCard label="Pending W/D" value={wallet?.pendingWithdrawals ?? 0} prefix="$" decimals={2} delta="Under review" trend="down" icon={<ArrowUpFromLine size={14} />} />
+            <StatCard label="Referrals" value={referral?.earnings ?? wallet?.referralEarnings ?? 0} prefix="$" decimals={2} icon={<Gift size={14} />} />
+          </>
+        )}
       </div>
 
       {/* Distribution + Performance */}
@@ -88,18 +111,18 @@ function WalletPage() {
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={portfolioBreakdown} dataKey="value" nameKey="name" innerRadius={55} outerRadius={85} paddingAngle={3} stroke="none">
-                  {portfolioBreakdown.map((p, i) => <Cell key={i} fill={p.color} />)}
+                <Pie data={breakdown} dataKey="value" nameKey="name" innerRadius={55} outerRadius={85} paddingAngle={3} stroke="none">
+                  {breakdown.map((p, i) => <Cell key={i} fill={p.color} />)}
                 </Pie>
                 <Tooltip contentStyle={{ background: "oklch(0.18 0.02 50)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 12, fontSize: 12 }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
           <div className="space-y-1.5 text-xs">
-            {portfolioBreakdown.map((p) => (
+            {breakdown.map((p) => (
               <div key={p.name} className="flex items-center justify-between">
                 <div className="flex items-center gap-2 min-w-0"><span className="h-2 w-2 rounded-full shrink-0" style={{ background: p.color }} /><span className="text-muted-foreground truncate">{p.name}</span></div>
-                <div className="font-medium">${p.value.toLocaleString()}</div>
+                <div className="font-medium">${p.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
               </div>
             ))}
           </div>
@@ -148,38 +171,38 @@ function WalletPage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           <AssetCard
             icon={<WalletIcon size={16} />} title="Main Wallet"
-            primary={`$${wallet.available.toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
+            primary={`$${(wallet?.available ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
             secondary="Available for use"
             actions={[{ label: "Deposit", onClick: () => setModal("deposit") }, { label: "Withdraw", onClick: () => setModal("withdraw") }, { label: "Transfer", onClick: () => setModal("transfer") }]}
           />
           <AssetCard
             icon={<Trophy size={16} />} title="Prop Firm Wallet"
-            primary={`$${propFirm.currentEquity.toLocaleString()}`}
-            secondary={`${propFirm.phase} · ${propFirm.completion}% complete`}
+            primary={primaryChallenge ? `$${primaryChallenge.currentEquity.toLocaleString()}` : "No challenge"}
+            secondary={primaryChallenge ? `${primaryChallenge.phase} · ${primaryChallenge.completion}% complete` : "Not enrolled yet"}
             actions={[{ label: "Continue Challenge", primary: true }]}
           />
           <AssetCard
             icon={<Bot size={16} />} title="Trading Bots Wallet"
-            primary={`+$${activeBots.reduce((a, b) => a + b.profit, 0).toLocaleString()}`}
-            secondary={`${activeBots.length} bots · subscription active`}
+            primary={`+$${totalBotProfit.toLocaleString()}`}
+            secondary={`${bots.length} bot${bots.length === 1 ? "" : "s"} · ${bots.filter((b) => b.status === "Running").length} active`}
             actions={[{ label: "Manage Bots" }]}
           />
           <AssetCard
             icon={<LineIcon size={16} />} title="Signals Wallet"
-            primary="$49 / mo"
-            secondary="Renews Jul 14 · Auto-renew on"
-            actions={[{ label: "Renew" }, { label: "Auto-renew" }]}
+            primary={session?.user?.plan ? `${session.user.plan} plan` : "No plan"}
+            secondary="Manage from the Signals page"
+            actions={[{ label: "View Signals" }]}
           />
           <AssetCard
             icon={<GraduationCap size={16} />} title="Academy Wallet"
-            primary={`${academy.lessons.done} lessons`}
-            secondary={`${academy.certificates} certificates · 4 mentor credits`}
+            primary={primaryEnrollment ? `${primaryEnrollment.progress}% complete` : "Not enrolled"}
+            secondary={primaryEnrollment?.course?.title ?? "Browse the Academy"}
             actions={[{ label: "View History" }]}
           />
           <AssetCard
             icon={<Gift size={16} />} title="Referral Wallet"
-            primary={`$${referral.earnings.toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
-            secondary={`${referral.total} referrals · $420 withdrawable`}
+            primary={`$${(referral?.earnings ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
+            secondary={`${referral?.total ?? 0} referral${(referral?.total ?? 0) === 1 ? "" : "s"}`}
             actions={[{ label: "Invite Friends", primary: true }]}
           />
         </div>
@@ -223,36 +246,43 @@ function WalletPage() {
             <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1 text-[11px] rounded-full transition ${filter === f ? "brand-gradient text-brand-foreground" : "glass text-muted-foreground hover:text-foreground"}`}>{f}</button>
           ))}
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              <tr className="border-b border-white/5">
-                <th className="text-left py-2 font-medium">Date</th>
-                <th className="text-left py-2 font-medium">ID</th>
-                <th className="text-left py-2 font-medium">Type</th>
-                <th className="text-left py-2 font-medium">Method</th>
-                <th className="text-right py-2 font-medium">Amount</th>
-                <th className="text-right py-2 font-medium">Status</th>
-                <th className="text-right py-2 font-medium"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTx.map((t) => (
-                <tr key={t.id} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02]">
-                  <td className="py-2.5 text-muted-foreground">{t.date}</td>
-                  <td className="py-2.5 text-muted-foreground">{t.id}</td>
-                  <td className="py-2.5">{t.type}</td>
-                  <td className="py-2.5 text-muted-foreground">{t.method}</td>
-                  <td className={`py-2.5 text-right font-medium ${t.amount > 0 ? "text-emerald-400" : "text-rose-400"}`}>{t.amount > 0 ? "+" : ""}${Math.abs(t.amount).toLocaleString()}</td>
-                  <td className="py-2.5 text-right"><StatusPill status={t.status} /></td>
-                  <td className="py-2.5 text-right">
-                    <button onClick={() => setSelectedTx(t)} className="text-brand hover:underline text-[11px]">Details</button>
-                  </td>
+        {filteredTx.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-white/10 py-10 flex flex-col items-center justify-center text-center gap-2">
+            <WalletIcon size={22} className="text-muted-foreground" />
+            <div className="text-xs text-muted-foreground">No transactions{filter !== "All" ? ` in ${filter}` : ""} yet.</div>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                <tr className="border-b border-white/5">
+                  <th className="text-left py-2 font-medium">Date</th>
+                  <th className="text-left py-2 font-medium">Reference</th>
+                  <th className="text-left py-2 font-medium">Type</th>
+                  <th className="text-left py-2 font-medium">Method</th>
+                  <th className="text-right py-2 font-medium">Amount</th>
+                  <th className="text-right py-2 font-medium">Status</th>
+                  <th className="text-right py-2 font-medium"></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filteredTx.map((t) => (
+                  <tr key={t._id} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02]">
+                    <td className="py-2.5 text-muted-foreground">{new Date(t.createdAt).toLocaleDateString()}</td>
+                    <td className="py-2.5 text-muted-foreground">{t.ref}</td>
+                    <td className="py-2.5">{t.type}</td>
+                    <td className="py-2.5 text-muted-foreground">{t.method}</td>
+                    <td className={`py-2.5 text-right font-medium ${t.amount > 0 ? "text-emerald-400" : "text-rose-400"}`}>{t.amount > 0 ? "+" : ""}${Math.abs(t.amount).toLocaleString()}</td>
+                    <td className="py-2.5 text-right"><StatusPill status={t.status} /></td>
+                    <td className="py-2.5 text-right">
+                      <button onClick={() => setSelectedTx(t)} className="text-brand hover:underline text-[11px]">Details</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </GlassCard>
 
       {/* Payment methods + Security */}
@@ -280,11 +310,11 @@ function WalletPage() {
           <SectionTitle title="Wallet Security" />
           <div className="space-y-2.5">
             {[
-              { icon: Key, label: "Withdrawal PIN", value: "Enabled" },
-              { icon: ShieldCheck, label: "Two-Factor Auth", value: "Active" },
-              { icon: Check, label: "Verified Identity", value: "Verified" },
-              { icon: ArrowUpFromLine, label: "Last Withdrawal", value: "Jun 27" },
-              { icon: ArrowDownToLine, label: "Last Deposit", value: "Jun 29" },
+              { icon: ShieldCheck, label: "Two-Factor Auth", value: session?.user?.twoFactorEnabled ? "Enabled" : "Disabled" },
+              { icon: Check, label: "Identity Verification", value: (session?.user?.kyc as string) ?? "Pending" },
+              { icon: Key, label: "Account Status", value: (session?.user?.status as string) ?? "Active" },
+              { icon: ArrowUpFromLine, label: "Pending Withdrawals", value: `$${(wallet?.pendingWithdrawals ?? 0).toLocaleString()}` },
+              { icon: ArrowDownToLine, label: "Total Deposits", value: `$${(wallet?.totalDeposits ?? 0).toLocaleString()}` },
             ].map((s) => (
               <div key={s.label} className="flex items-center gap-3 text-xs rounded-xl bg-white/[0.03] border border-white/5 p-3">
                 <div className="h-8 w-8 rounded-lg glass grid place-items-center text-brand"><s.icon size={14} /></div>
@@ -348,8 +378,8 @@ function WalletPage() {
 
       {/* Modals */}
       <DepositModal open={modal === "deposit"} onClose={() => setModal(null)} />
-      <WithdrawModal open={modal === "withdraw"} onClose={() => setModal(null)} />
-      <TransferModal open={modal === "transfer"} onClose={() => setModal(null)} />
+      <WithdrawModal open={modal === "withdraw"} onClose={() => setModal(null)} onDone={refresh} available={wallet?.available ?? 0} />
+      <TransferModal open={modal === "transfer"} onClose={() => setModal(null)} onDone={refresh} available={wallet?.available ?? 0} />
       <TxDetailsModal tx={selectedTx} onClose={() => setSelectedTx(null)} />
     </div>
   );
@@ -412,72 +442,135 @@ function DepositModal({ open, onClose }: { open: boolean; onClose: () => void })
   );
 }
 
-
-function WithdrawModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+function WithdrawModal({ open, onClose, onDone, available }: { open: boolean; onClose: () => void; onDone: () => void; available: number }) {
   const [done, setDone] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [ref, setRef] = useState("");
+  const [method, setMethod] = useState("USDT TRC20");
+  const [amount, setAmount] = useState("500");
+
+  const close = () => { setDone(false); onClose(); };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amt = Number(amount);
+    if (!amt || amt <= 0) { toast.error("Enter a valid amount"); return; }
+    if (amt > available) { toast.error("Amount exceeds available balance"); return; }
+    setSubmitting(true);
+    try {
+      const { transaction } = await api.withdraw(amt, method);
+      setRef(transaction.ref);
+      setDone(true);
+      onDone();
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Withdrawal failed");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
-    <Modal open={open} onClose={() => { setDone(false); onClose(); }} title="Withdraw Funds" size="lg">
+    <Modal open={open} onClose={close} title="Withdraw Funds" size="lg">
       {done ? (
         <div className="text-center py-6">
           <div className="h-14 w-14 mx-auto rounded-full brand-gradient grid place-items-center text-brand-foreground shadow-glow"><Check size={26} /></div>
           <h4 className="mt-4 font-semibold">Withdrawal submitted</h4>
-          <p className="text-xs text-muted-foreground mt-1">Reference WD-119 · ETA 1–3 business days</p>
-          <button onClick={() => { setDone(false); onClose(); }} className="mt-5 px-5 py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium">Close</button>
+          <p className="text-xs text-muted-foreground mt-1">Reference {ref} · Pending admin approval</p>
+          <button onClick={close} className="mt-5 px-5 py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium">Close</button>
         </div>
       ) : (
-        <form onSubmit={(e) => { e.preventDefault(); setDone(true); }} className="space-y-4">
+        <form onSubmit={submit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Method"><select className={inputCls}>{["USDT TRC20", "Bank Transfer", "Bitcoin"].map((m) => <option key={m}>{m}</option>)}</select></Field>
-            <Field label="Account"><select className={inputCls}><option>Primary · •••• 4821</option></select></Field>
+            <Field label="Method">
+              <select value={method} onChange={(e) => setMethod(e.target.value)} className={inputCls}>
+                {["USDT TRC20", "Bank Transfer", "Bitcoin"].map((m) => <option key={m}>{m}</option>)}
+              </select>
+            </Field>
+            <Field label="Available"><input readOnly value={`$${available.toLocaleString()}`} className={inputCls} /></Field>
           </div>
-          <Field label="Amount (USD)"><input type="number" defaultValue={500} className={inputCls} /></Field>
+          <Field label="Amount (USD)"><input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className={inputCls} /></Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Withdrawal PIN"><input type="password" maxLength={6} className={inputCls} placeholder="••••••" /></Field>
             <Field label="2FA Code"><input type="text" maxLength={6} className={inputCls} placeholder="123 456" /></Field>
           </div>
           <div className="glass rounded-xl p-3 text-xs space-y-1.5">
-            <div className="flex justify-between"><span className="text-muted-foreground">Fee</span><span>$5.00</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Processing</span><span>1–3 days</span></div>
-            <div className="flex justify-between font-semibold pt-1.5 border-t border-white/5"><span>Net Receive</span><span className="text-brand">$495.00</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span>${amount || 0}</span></div>
+            <div className="flex justify-between font-semibold pt-1.5 border-t border-white/5"><span>Requested</span><span className="text-brand">${amount || 0}</span></div>
           </div>
-          <button type="submit" className="w-full py-3 rounded-xl brand-gradient text-brand-foreground text-sm font-medium">Confirm Withdrawal</button>
+          <button type="submit" disabled={submitting} className="w-full py-3 rounded-xl brand-gradient text-brand-foreground text-sm font-medium disabled:opacity-60">
+            {submitting ? "Submitting…" : "Confirm Withdrawal"}
+          </button>
         </form>
       )}
     </Modal>
   );
 }
 
-function TransferModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+function TransferModal({ open, onClose, onDone, available }: { open: boolean; onClose: () => void; onDone: () => void; available: number }) {
   const [done, setDone] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [amount, setAmount] = useState("250");
+  const [from, setFrom] = useState("Main Wallet");
+  const [to, setTo] = useState("Prop Firm Wallet");
+
+  const close = () => { setDone(false); onClose(); };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amt = Number(amount);
+    if (!amt || amt <= 0) { toast.error("Enter a valid amount"); return; }
+    if (amt > available) { toast.error("Amount exceeds available balance"); return; }
+    setSubmitting(true);
+    try {
+      await api.transfer(amt, from, to);
+      setDone(true);
+      onDone();
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Transfer failed");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
-    <Modal open={open} onClose={() => { setDone(false); onClose(); }} title="Transfer Between Wallets">
+    <Modal open={open} onClose={close} title="Transfer Between Wallets">
       {done ? (
         <div className="text-center py-6">
           <div className="h-14 w-14 mx-auto rounded-full brand-gradient grid place-items-center text-brand-foreground shadow-glow"><Check size={26} /></div>
           <h4 className="mt-4 font-semibold">Transfer complete</h4>
-          <button onClick={() => { setDone(false); onClose(); }} className="mt-5 px-5 py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium">Close</button>
+          <button onClick={close} className="mt-5 px-5 py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium">Close</button>
         </div>
       ) : (
-        <form onSubmit={(e) => { e.preventDefault(); setDone(true); }} className="space-y-4">
-          <Field label="From"><select className={inputCls}>{["Main Wallet", "Referral Wallet"].map((m) => <option key={m}>{m}</option>)}</select></Field>
+        <form onSubmit={submit} className="space-y-4">
+          <Field label="From">
+            <select value={from} onChange={(e) => setFrom(e.target.value)} className={inputCls}>
+              {["Main Wallet", "Referral Wallet"].map((m) => <option key={m}>{m}</option>)}
+            </select>
+          </Field>
           <div className="grid place-items-center text-brand"><ArrowLeftRight size={16} /></div>
-          <Field label="To"><select className={inputCls}>{["Bot Wallet", "Prop Firm Wallet", "Signals Wallet", "Academy Wallet"].map((m) => <option key={m}>{m}</option>)}</select></Field>
-          <Field label="Amount"><input type="number" defaultValue={250} className={inputCls} /></Field>
-          <button type="submit" className="w-full py-3 rounded-xl brand-gradient text-brand-foreground text-sm font-medium">Transfer</button>
+          <Field label="To">
+            <select value={to} onChange={(e) => setTo(e.target.value)} className={inputCls}>
+              {["Bot Wallet", "Prop Firm Wallet", "Signals Wallet", "Academy Wallet"].map((m) => <option key={m}>{m}</option>)}
+            </select>
+          </Field>
+          <Field label="Amount"><input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className={inputCls} /></Field>
+          <button type="submit" disabled={submitting} className="w-full py-3 rounded-xl brand-gradient text-brand-foreground text-sm font-medium disabled:opacity-60">
+            {submitting ? "Transferring…" : "Transfer"}
+          </button>
         </form>
       )}
     </Modal>
   );
 }
 
-function TxDetailsModal({ tx, onClose }: { tx: (typeof transactions)[number] | null; onClose: () => void }) {
+function TxDetailsModal({ tx, onClose }: { tx: ApiTransaction | null; onClose: () => void }) {
   return (
     <Modal open={!!tx} onClose={onClose} title="Transaction Details">
       {tx && (
         <div className="space-y-3 text-xs">
           {[
-            ["Transaction ID", tx.id],
-            ["Date", tx.date],
+            ["Transaction ID", tx._id],
+            ["Date", new Date(tx.createdAt).toLocaleString()],
             ["Type", tx.type],
             ["Category", tx.category],
             ["Method", tx.method],

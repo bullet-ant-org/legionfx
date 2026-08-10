@@ -225,4 +225,18 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ amount, from, to }),
     }),
+
+  updateProfile: (data: { name?: string; phone?: string; country?: string; avatarUrl?: string }) =>
+    request<{ user: ApiUser }>("/auth/me", { method: "PATCH", body: JSON.stringify(data) }),
+
+  changePassword: (currentPassword: string, newPassword: string) =>
+    request<{ message: string }>("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({ currentPassword, newPassword }),
+    }),
+
+  deactivateAccount: () => request<{ message: string }>("/auth/deactivate", { method: "POST" }),
+
+  deleteAccount: (password: string) =>
+    request<{ message: string }>("/auth/me", { method: "DELETE", body: JSON.stringify({ password }) }),
 };

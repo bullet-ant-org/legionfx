@@ -74,6 +74,13 @@ export async function signUp(name: string, email: string, password: string, ref?
   }
 }
 
+/** Update the cached session directly from a fresh ApiUser (e.g. after a profile edit) without an extra round trip. */
+export function setSessionUser(user: ApiUser): Session {
+  const session = toSession(user);
+  persist(session);
+  return session;
+}
+
 export async function signOut() {
   try {
     await api.logout();
@@ -81,4 +88,20 @@ export async function signOut() {
     setToken(null);
     persist(null);
   }
+}
+
+/** Deactivate the current account. Backend also clears the auth cookie, but
+ * since we're on Bearer-token auth, clear the local token/session too. */
+export async function deactivateAccount() {
+  const res = await api.deactivateAccount();
+  setToken(null);
+  persist(null);
+  return res;
+}
+
+export async function deleteAccount(password: string) {
+  const res = await api.deleteAccount(password);
+  setToken(null);
+  persist(null);
+  return res;
 }

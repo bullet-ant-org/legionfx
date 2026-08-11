@@ -95,11 +95,11 @@ export type ApiTransaction = {
 
 export type ApiUserBot = {
   _id: string;
-  bot: { _id: string; name: string; pair?: string; risk?: string; [key: string]: unknown } | null;
+  bot: { _id: string; name: string; pair?: string; risk?: string; description?: string; [key: string]: unknown } | null;
   status: string;
   profit?: number;
   winRate?: number;
-  uptime?: string;
+  startedAt?: string;
   [key: string]: unknown;
 };
 
@@ -113,13 +113,17 @@ export type ApiChallenge = {
   dailyDrawdown: number;
   maxDrawdown: number;
   completion: number;
+  remainingDays?: number;
+  createdAt?: string;
   [key: string]: unknown;
 };
 
 export type ApiEnrollment = {
   _id: string;
-  course: { _id: string; title: string; [key: string]: unknown } | null;
-  progress: number;
+  course: { _id: string; title: string; description?: string; lessonCount?: number; price?: number; [key: string]: unknown } | null;
+  lessonsDone: number;
+  completion: number;
+  certificateEarned: boolean;
   [key: string]: unknown;
 };
 
@@ -186,8 +190,18 @@ export const api = {
   getWallet: () => request<{ wallet: ApiWallet }>("/wallet"),
   getTransactions: () => request<{ transactions: ApiTransaction[] }>("/wallet/transactions"),
   getMyBots: () => request<{ bots: ApiUserBot[] }>("/bots/mine"),
-  getMyChallenges: () => request<{ challenges: ApiChallenge[] }>("/prop-firm/mine"),
+  getBotCatalog: () => request<{ bots: { _id: string; name: string; pair: string; risk: string; description: string }[] }>("/bots"),
+  activateBot: (botId: string) => request<{ bot: ApiUserBot }>("/bots/activate", { method: "POST", body: JSON.stringify({ botId }) }),
+  setUserBotStatus: (id: string, status: "Running" | "Paused" | "Stopped") =>
+    request<{ bot: ApiUserBot }>(`/bots/mine/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }) }),  getMyChallenges: () => request<{ challenges: ApiChallenge[] }>("/prop-firm/mine"),
+  getPropFirmPlans: () => request<{ plans: { _id: string; size: number; price: number; profitSplit: number; popular: boolean }[] }>("/prop-firm/plans"),
+  buyChallenge: (planId: string) =>
+    request<{ challenge: ApiChallenge; wallet: ApiWallet }>("/prop-firm/buy", { method: "POST", body: JSON.stringify({ planId }) }),
   getMyEnrollments: () => request<{ enrollments: ApiEnrollment[] }>("/academy/mine"),
+  getCourses: () => request<{ courses: { _id: string; title: string; description: string; lessonCount: number; price: number }[] }>("/academy/courses"),
+  enrollCourse: (courseId: string) => request<{ enrollment: ApiEnrollment }>("/academy/enroll", { method: "POST", body: JSON.stringify({ courseId }) }),
+  updateEnrollmentProgress: (id: string, lessonsDone: number) =>
+    request<{ enrollment: ApiEnrollment }>(`/academy/enrollments/${id}/progress`, { method: "PATCH", body: JSON.stringify({ lessonsDone }) }),
   getSignals: () => request<{ signals: ApiSignal[] }>("/signals"),
   getNotifications: () => request<{ notifications: ApiNotification[] }>("/notifications"),
   markAllNotificationsRead: () => request<{ message: string }>("/notifications/read-all", { method: "PATCH" }),

@@ -195,7 +195,7 @@ function WalletPage() {
           />
           <AssetCard
             icon={<GraduationCap size={16} />} title="Academy Wallet"
-            primary={primaryEnrollment ? `${primaryEnrollment.progress}% complete` : "Not enrolled"}
+            primary={primaryEnrollment ? `${primaryEnrollment.completion}% complete` : "Not enrolled"}
             secondary={primaryEnrollment?.course?.title ?? "Browse the Academy"}
             actions={[{ label: "View History" }]}
           />

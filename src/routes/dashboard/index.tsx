@@ -163,7 +163,7 @@ function OverviewPage() {
                     <div className="text-lg font-bold text-emerald-400">+${(b.profit ?? 0).toLocaleString()}</div>
                     <div className="text-[10px] text-muted-foreground">· {b.winRate ?? 0}% WR</div>
                   </div>
-                  <div className="text-[10px] text-muted-foreground mt-1">Uptime {b.uptime ?? "—"}</div>
+                  <div className="text-[10px] text-muted-foreground mt-1">Uptime {uptimeSince(b.startedAt)}</div>
                   <div className="mt-3 flex gap-1.5">
                     <button className="flex-1 py-1.5 text-[10px] rounded-lg glass hover:bg-white/10 flex items-center justify-center gap-1"><Pause size={10} /> Pause</button>
                     <button className="flex-1 py-1.5 text-[10px] rounded-lg glass hover:bg-white/10 flex items-center justify-center gap-1"><Settings size={10} /> Edit</button>
@@ -216,11 +216,11 @@ function OverviewPage() {
             <>
               <SectionTitle title="Academy Progress" subtitle={primaryEnrollment.course?.title ?? "Course"} />
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold"><Counter to={primaryEnrollment.progress} suffix="%" /></span>
+                <span className="text-2xl font-bold"><Counter to={primaryEnrollment.completion} suffix="%" /></span>
                 <span className="text-xs text-muted-foreground">completion</span>
               </div>
               <div className="mt-3 h-2 rounded-full bg-white/5 overflow-hidden">
-                <div className="h-full brand-gradient rounded-full" style={{ width: `${primaryEnrollment.progress}%` }} />
+                <div className="h-full brand-gradient rounded-full" style={{ width: `${primaryEnrollment.completion}%` }} />
               </div>
               <Link to="/dashboard/academy" className="mt-4 inline-flex items-center gap-2 text-xs text-brand hover:underline">Continue learning <ChevronRight size={12} /></Link>
             </>
@@ -412,6 +412,16 @@ function OverviewPage() {
 function referralLink(code: string) {
   if (typeof window === "undefined") return `https://legionfx.space/login?ref=${code}`;
   return `${window.location.origin}/login?ref=${code}`;
+}
+
+function uptimeSince(iso?: string) {
+  if (!iso) return "—";
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const days = Math.floor(diffMs / 86400000);
+  if (days >= 1) return `${days}d`;
+  const hrs = Math.floor(diffMs / 3600000);
+  if (hrs >= 1) return `${hrs}h`;
+  return `${Math.max(1, Math.floor(diffMs / 60000))}m`;
 }
 
 function timeAgo(iso: string) {

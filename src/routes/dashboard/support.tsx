@@ -1,152 +1,255 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { motion } from "framer-motion";
 import {
-  LifeBuoy, Plus, Search, MessageCircle, BookOpen, Video, Mail, Phone,
-  Clock, CheckCircle2, AlertCircle, ChevronRight, ChevronDown, Send,
+  MessageCircle, Mail, Phone, Video, Search, ChevronRight, Send, Plus,
+  Clock, CheckCircle2, AlertCircle,
 } from "lucide-react";
-import { GlassCard, StatCard, SectionTitle, StatusPill, Modal, Field, inputCls } from "@/components/dashboard/primitives";
+import { GlassCard, SectionTitle, Modal, Field, inputCls, StatusPill } from "@/components/dashboard/primitives";
+import { useDashboardData } from "@/lib/dashboard-data";
+import { api, ApiError, type ApiTicket } from "@/lib/api";
 
 export const Route = createFileRoute("/dashboard/support")({
   ssr: false,
   component: SupportPage,
 });
 
-const tickets = [
-  { id: "TKT-4821", subject: "Withdrawal delayed for 3 days", category: "Wallet", priority: "High", status: "Active", updated: "2h ago", replies: 4 },
-  { id: "TKT-4802", subject: "Bot won't deploy on XAU/USD", category: "Trading Bots", priority: "Medium", status: "Active", updated: "1d ago", replies: 2 },
-  { id: "TKT-4780", subject: "Phase 2 rules clarification", category: "Prop Firm", priority: "Low", status: "Completed", updated: "3d ago", replies: 6 },
-  { id: "TKT-4754", subject: "Academy course access issue", category: "Academy", priority: "Medium", status: "Completed", updated: "1w ago", replies: 3 },
-];
-
-const kb = [
-  { cat: "Getting Started", articles: 24, icon: BookOpen },
-  { cat: "Wallet & Payments", articles: 18, icon: BookOpen },
-  { cat: "Trading Bots", articles: 32, icon: BookOpen },
-  { cat: "Prop Firm", articles: 28, icon: BookOpen },
-  { cat: "Academy", articles: 15, icon: BookOpen },
-  { cat: "Signals", articles: 12, icon: BookOpen },
-  { cat: "Security", articles: 20, icon: BookOpen },
-  { cat: "Billing", articles: 14, icon: BookOpen },
-];
-
 const faqs = [
-  ["How long do withdrawals take?", "Crypto withdrawals process within 30 minutes. Bank transfers take 1–3 business days."],
-  ["Can I run multiple prop firm challenges?", "Yes. You can hold up to 5 concurrent challenges of any account size."],
-  ["What happens if I fail a challenge?", "You can restart with a 30% discount using your reset code, or purchase a fresh evaluation."],
-  ["How do I connect my broker to a bot?", "Go to Trading Bots → Settings → Broker Integration, and paste your MT5/MT4 API credentials."],
-  ["Are signals guaranteed to be profitable?", "No signal service can guarantee profit. Our historical win rate is 90%, but market conditions vary."],
+  ["How do I deposit funds?", "Go to Wallet → Deposit, enter an amount, and follow the checkout — currently crypto deposits only."],
+  ["How long does verification take?", "Identity verification is reviewed by our team, usually within 1–2 business days once documents are submitted."],
+  ["Can I withdraw anytime?", "Yes, as long as your available balance covers it. Withdrawals go through admin review before completing."],
+  ["How do I join a prop firm challenge?", "Visit the Prop Firm page, pick a plan, and confirm the purchase — funds come from your wallet."],
+  ["Is copy trading automated?", "Not yet — signals show entry/SL/TP and you execute manually with your own broker for now."],
+];
+
+const quickChannels = [
+  { icon: Mail, label: "Email Support", detail: "support@legionfx.com", action: "mailto:support@legionfx.com", kind: "link" as const },
+  { icon: Phone, label: "Phone Support", detail: "Call our team", action: "tel:+10000000000", kind: "link" as const },
+  { icon: MessageCircle, label: "Live Chat", detail: "Coming soon", kind: "toast" as const },
+  { icon: Video, label: "Video Call", detail: "Coming soon", kind: "toast" as const },
 ];
 
 function SupportPage() {
-  const [newTicket, setNewTicket] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const { session } = useDashboardData();
+  const [tickets, setTickets] = useState<ApiTicket[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [newOpen, setNewOpen] = useState(false);
+  const [active, setActive] = useState<ApiTicket | null>(null);
+
+  const load = () => {
+    setLoading(true);
+    api.getTickets()
+      .then((r) => setTickets(r.tickets))
+      .catch((err) => toast.error(err instanceof ApiError ? err.message : "Could not load tickets"))
+      .finally(() => setLoading(false));
+  };
+  useEffect(load, []);
+
+  const filteredFaqs = useMemo(
+    () => faqs.filter(([q]) => q.toLowerCase().includes(search.toLowerCase())),
+    [search],
+  );
+
+  const openCount = tickets.filter((t) => t.status === "Open" || t.status === "In Progress").length;
 
   return (
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Support Center</h1>
-          <p className="text-sm text-muted-foreground mt-1">Get help from the LEGIONFX team, 24/7.</p>
+          <p className="text-sm text-muted-foreground mt-1">Get help fast — search answers or open a ticket with our team.</p>
         </div>
-        <button onClick={() => setNewTicket(true)} className="px-4 py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium inline-flex items-center gap-2 shadow-glow"><Plus size={15} /> New Ticket</button>
+        <button onClick={() => setNewOpen(true)} className="px-4 py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium inline-flex items-center gap-2 shadow-glow">
+          <Plus size={15} /> New Ticket
+        </button>
       </motion.div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label="Open Tickets" value={2} delta="1 high priority" icon={<AlertCircle size={14} />} />
-        <StatCard label="Resolved" value={18} delta="This year" icon={<CheckCircle2 size={14} />} />
-        <StatCard label="Avg Response" value={12} suffix="m" delta="Under SLA" icon={<Clock size={14} />} />
-        <StatCard label="Satisfaction" value={98} suffix="%" delta="Last 30 days" icon={<CheckCircle2 size={14} />} />
-      </div>
+      {/* Search */}
+      <GlassCard className="p-2">
+        <div className="flex items-center gap-3 px-3 py-2">
+          <Search size={16} className="text-muted-foreground" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search help articles…" className="flex-1 bg-transparent text-sm outline-none" />
+        </div>
+      </GlassCard>
 
-      {/* Quick contact */}
-      <div className="grid md:grid-cols-4 gap-4">
-        {[
-          { icon: MessageCircle, title: "Live Chat", desc: "Chat with support", cta: "Start Chat", accent: true },
-          { icon: Mail, title: "Email", desc: "support@legionfx.com", cta: "Send Email" },
-          { icon: Phone, title: "Phone", desc: "+1 (800) 555-LGFX", cta: "Call Now" },
-          { icon: Video, title: "Video Call", desc: "Book 15 min session", cta: "Schedule" },
-        ].map((c) => (
-          <GlassCard key={c.title} className={`p-5 hover-lift ${c.accent ? "border-brand/30" : ""}`}>
-            <div className={`h-11 w-11 rounded-xl grid place-items-center ${c.accent ? "brand-gradient text-brand-foreground" : "glass text-brand"}`}><c.icon size={18} /></div>
-            <div className="text-sm font-semibold mt-3">{c.title}</div>
-            <div className="text-[10px] text-muted-foreground">{c.desc}</div>
-            <button className={`mt-3 w-full py-2 rounded-xl text-xs font-medium ${c.accent ? "brand-gradient text-brand-foreground" : "glass hover:bg-white/10"}`}>{c.cta}</button>
-          </GlassCard>
+      {/* Quick channels */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {quickChannels.map((c) => (
+          c.kind === "link" ? (
+            <a key={c.label} href={c.action} className="glass rounded-2xl p-4 flex flex-col items-center gap-2 hover-lift text-center">
+              <div className="h-10 w-10 rounded-xl brand-gradient grid place-items-center text-brand-foreground"><c.icon size={16} /></div>
+              <div className="text-xs font-medium">{c.label}</div>
+              <div className="text-[10px] text-muted-foreground">{c.detail}</div>
+            </a>
+          ) : (
+            <button key={c.label} onClick={() => toast.info(`${c.label} is coming soon.`)} className="glass rounded-2xl p-4 flex flex-col items-center gap-2 hover-lift text-center">
+              <div className="h-10 w-10 rounded-xl brand-gradient grid place-items-center text-brand-foreground"><c.icon size={16} /></div>
+              <div className="text-xs font-medium">{c.label}</div>
+              <div className="text-[10px] text-muted-foreground">{c.detail}</div>
+            </button>
+          )
         ))}
       </div>
 
-      {/* Tickets */}
-      <GlassCard className="p-5">
-        <SectionTitle title="Your Tickets" subtitle="View and manage support requests" />
-        <div className="space-y-2">
-          {tickets.map((t) => (
-            <div key={t.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition">
-              <div className="w-16 text-[10px] font-mono text-muted-foreground">{t.id}</div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold truncate">{t.subject}</div>
-                <div className="text-[10px] text-muted-foreground">{t.category} · {t.replies} replies · updated {t.updated}</div>
-              </div>
-              <span className={`text-[10px] px-2 py-1 rounded-full ${t.priority === "High" ? "bg-rose-400/10 text-rose-400" : t.priority === "Medium" ? "bg-amber-400/10 text-amber-400" : "bg-white/5 text-muted-foreground"}`}>{t.priority}</span>
-              <StatusPill status={t.status} />
-              <button className="text-brand hover:underline text-xs inline-flex items-center gap-1">Open <ChevronRight size={12} /></button>
+      <div className="grid lg:grid-cols-3 gap-4">
+        {/* FAQ */}
+        <GlassCard className="lg:col-span-2 p-5">
+          <SectionTitle title="Frequently Asked Questions" />
+          {filteredFaqs.length === 0 ? (
+            <div className="text-xs text-muted-foreground py-6 text-center">No articles match "{search}". Try a support ticket instead.</div>
+          ) : (
+            <div className="space-y-2">
+              {filteredFaqs.map(([q, a]) => (
+                <details key={q} className="group rounded-xl bg-white/[0.03] border border-white/5 p-3 open:bg-white/[0.05]">
+                  <summary className="text-sm cursor-pointer list-none flex items-center justify-between"><span>{q}</span><ChevronRight size={14} className="text-brand transition group-open:rotate-90" /></summary>
+                  <p className="mt-2 text-xs text-muted-foreground">{a}</p>
+                </details>
+              ))}
             </div>
-          ))}
-        </div>
-      </GlassCard>
+          )}
+        </GlassCard>
 
-      {/* Knowledge base */}
-      <div>
-        <div className="flex items-end justify-between gap-4 mb-4">
-          <div>
-            <h2 className="text-lg md:text-xl font-semibold tracking-tight">Knowledge Base</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Self-service articles & guides</p>
+        {/* Status */}
+        <GlassCard className="p-5">
+          <SectionTitle title="Your Tickets" subtitle={`${openCount} open`} />
+          <div className="space-y-2 max-h-72 overflow-y-auto">
+            {loading ? (
+              Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-16 rounded-xl glass animate-pulse" />)
+            ) : tickets.length === 0 ? (
+              <div className="text-xs text-muted-foreground text-center py-6">No tickets yet.</div>
+            ) : (
+              tickets.map((t) => (
+                <button key={t._id} onClick={() => setActive(t)} className="w-full text-left p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] transition">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-xs font-medium truncate">{t.subject}</div>
+                    <StatusPill status={t.status} />
+                  </div>
+                  <div className="text-[10px] text-muted-foreground mt-1">{new Date(t.createdAt).toLocaleDateString()} · {t.category}</div>
+                </button>
+              ))
+            )}
           </div>
-          <div className="relative w-64 max-w-full">
-            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input placeholder="Search articles..." className={`${inputCls} pl-9 text-xs`} />
-          </div>
-        </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3">
-          {kb.map((k) => (
-            <button key={k.cat} className="glass rounded-2xl p-4 text-left hover-lift">
-              <div className="h-10 w-10 rounded-xl brand-gradient grid place-items-center text-brand-foreground"><k.icon size={16} /></div>
-              <div className="mt-3 text-sm font-semibold">{k.cat}</div>
-              <div className="text-[10px] text-muted-foreground">{k.articles} articles</div>
-            </button>
-          ))}
-        </div>
+        </GlassCard>
       </div>
 
-      {/* FAQ */}
-      <GlassCard className="p-5">
-        <SectionTitle title="Frequently Asked Questions" />
-        <div className="space-y-2">
-          {faqs.map(([q, a], i) => (
-            <div key={i} className="rounded-xl bg-white/[0.03] border border-white/5 overflow-hidden">
-              <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full flex items-center justify-between p-4 text-left">
-                <span className="text-sm font-medium">{q}</span>
-                <ChevronDown size={14} className={`transition ${openFaq === i ? "rotate-180" : ""} text-muted-foreground`} />
-              </button>
-              {openFaq === i && <div className="px-4 pb-4 text-xs text-muted-foreground">{a}</div>}
-            </div>
-          ))}
-        </div>
-      </GlassCard>
-
-      {/* New ticket modal */}
-      <Modal open={newTicket} onClose={() => setNewTicket(false)} title="Create Support Ticket" size="lg">
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Category"><select className={inputCls}><option>Wallet & Payments</option><option>Trading Bots</option><option>Prop Firm</option><option>Academy</option><option>Signals</option><option>Account & Security</option><option>Other</option></select></Field>
-            <Field label="Priority"><select className={inputCls}><option>Low</option><option>Medium</option><option>High</option><option>Urgent</option></select></Field>
-          </div>
-          <Field label="Subject"><input className={inputCls} placeholder="Brief summary of the issue" /></Field>
-          <Field label="Description"><textarea rows={5} className={inputCls + " resize-none"} placeholder="Please describe the issue in detail..." /></Field>
-          <Field label="Attach Files (optional)"><input type="file" className={inputCls} multiple /></Field>
-          <button onClick={() => setNewTicket(false)} className="w-full py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium inline-flex items-center justify-center gap-2"><Send size={13} /> Submit Ticket</button>
-        </div>
-      </Modal>
+      <NewTicketModal open={newOpen} onClose={() => setNewOpen(false)} onCreated={(t) => { setTickets((p) => [t, ...p]); setActive(t); }} />
+      <TicketModal ticket={active} onClose={() => setActive(null)} currentUserId={session?.user?._id as string} onUpdated={(t) => setTickets((p) => p.map((x) => (x._id === t._id ? t : x)))} />
     </div>
+  );
+}
+
+function NewTicketModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: (t: ApiTicket) => void }) {
+  const [subject, setSubject] = useState("");
+  const [category, setCategory] = useState("General");
+  const [priority, setPriority] = useState("Medium");
+  const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const reset = () => { setSubject(""); setCategory("General"); setPriority("Medium"); setMessage(""); };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!subject.trim() || !message.trim()) { toast.error("Subject and message are required"); return; }
+    setSubmitting(true);
+    try {
+      const { ticket } = await api.createTicket(subject.trim(), category, message.trim(), priority);
+      toast.success("Ticket submitted");
+      onCreated(ticket);
+      reset();
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Could not submit ticket");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Modal open={open} onClose={() => { reset(); onClose(); }} title="Open a support ticket">
+      <form onSubmit={submit} className="space-y-4">
+        <Field label="Subject"><input value={subject} onChange={(e) => setSubject(e.target.value)} className={inputCls} placeholder="What's the issue?" /></Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Category">
+            <select value={category} onChange={(e) => setCategory(e.target.value)} className={inputCls}>
+              {["General", "Wallet", "Prop Firm", "Bots", "Academy", "Verification", "Technical"].map((c) => <option key={c}>{c}</option>)}
+            </select>
+          </Field>
+          <Field label="Priority">
+            <select value={priority} onChange={(e) => setPriority(e.target.value)} className={inputCls}>
+              {["Low", "Medium", "High", "Urgent"].map((p) => <option key={p}>{p}</option>)}
+            </select>
+          </Field>
+        </div>
+        <Field label="Message"><textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={5} className={inputCls} placeholder="Describe your issue in detail…" /></Field>
+        <button type="submit" disabled={submitting} className="w-full py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium disabled:opacity-60">
+          {submitting ? "Submitting…" : "Submit Ticket"}
+        </button>
+      </form>
+    </Modal>
+  );
+}
+
+function TicketModal({ ticket, onClose, onUpdated, currentUserId }: { ticket: ApiTicket | null; onClose: () => void; onUpdated: (t: ApiTicket) => void; currentUserId: string }) {
+  const [reply, setReply] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const send = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ticket || !reply.trim()) return;
+    setSubmitting(true);
+    try {
+      const { ticket: updated } = await api.replyTicket(ticket._id, reply.trim());
+      onUpdated(updated);
+      setReply("");
+      toast.success("Reply sent");
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Could not send reply");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Modal open={!!ticket} onClose={() => { setReply(""); onClose(); }} title={ticket?.subject ?? "Ticket"} size="lg">
+      {ticket && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
+            <StatusPill status={ticket.status} />
+            <span>· {ticket.category}</span>
+            <span>· {ticket.priority} priority</span>
+            <span>· Opened {new Date(ticket.createdAt).toLocaleString()}</span>
+          </div>
+
+          <div className="max-h-80 overflow-y-auto space-y-3 pr-1">
+            <div className="rounded-xl bg-white/[0.03] border border-white/5 p-3">
+              <div className="text-[10px] text-muted-foreground mb-1">You · {new Date(ticket.createdAt).toLocaleString()}</div>
+              <div className="text-sm">{ticket.message}</div>
+            </div>
+            {ticket.replies.map((r, i) => {
+              const isMe = r.author === currentUserId;
+              return (
+                <div key={i} className={`rounded-xl p-3 border ${isMe ? "bg-brand/10 border-brand/20 ml-6" : "bg-white/[0.03] border-white/5 mr-6"}`}>
+                  <div className="text-[10px] text-muted-foreground mb-1">{isMe ? "You" : "Support Team"} · {new Date(r.createdAt).toLocaleString()}</div>
+                  <div className="text-sm">{r.body}</div>
+                </div>
+              );
+            })}
+          </div>
+
+          {ticket.status === "Closed" ? (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground p-3 rounded-xl bg-white/[0.03]">
+              <CheckCircle2 size={14} className="text-emerald-400" /> This ticket is closed. Open a new one if you need further help.
+            </div>
+          ) : (
+            <form onSubmit={send} className="flex gap-2">
+              <input value={reply} onChange={(e) => setReply(e.target.value)} placeholder="Type a reply…" className={`${inputCls} flex-1`} />
+              <button type="submit" disabled={submitting || !reply.trim()} className="px-4 py-2.5 rounded-xl brand-gradient text-brand-foreground disabled:opacity-60"><Send size={14} /></button>
+            </form>
+          )}
+        </div>
+      )}
+    </Modal>
   );
 }

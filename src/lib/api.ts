@@ -153,6 +153,20 @@ export type ApiDepositMethod = {
   [key: string]: unknown;
 };
 
+export type ApiTicketReply = { author: string; body: string; createdAt: string };
+export type ApiTicket = {
+  _id: string;
+  subject: string;
+  category: string;
+  message: string;
+  status: string;
+  priority: string;
+  replies: ApiTicketReply[];
+  createdAt: string;
+  updatedAt: string;
+  [key: string]: unknown;
+};
+
 export type ApiNotification = {
   _id: string;
   title: string;
@@ -240,7 +254,7 @@ export const api = {
       body: JSON.stringify({ amount, from, to }),
     }),
 
-  updateProfile: (data: { name?: string; phone?: string; country?: string; avatarUrl?: string }) =>
+  updateProfile: (data: { name?: string; phone?: string; country?: string; avatarUrl?: string; twoFactorEnabled?: boolean }) =>
     request<{ user: ApiUser }>("/auth/me", { method: "PATCH", body: JSON.stringify(data) }),
 
   changePassword: (currentPassword: string, newPassword: string) =>
@@ -253,4 +267,10 @@ export const api = {
 
   deleteAccount: (password: string) =>
     request<{ message: string }>("/auth/me", { method: "DELETE", body: JSON.stringify({ password }) }),
+
+  getTickets: () => request<{ tickets: ApiTicket[] }>("/support"),
+  createTicket: (subject: string, category: string, message: string, priority: string) =>
+    request<{ ticket: ApiTicket }>("/support", { method: "POST", body: JSON.stringify({ subject, category, message, priority }) }),
+  replyTicket: (id: string, body: string) =>
+    request<{ ticket: ApiTicket }>(`/support/${id}/reply`, { method: "POST", body: JSON.stringify({ body }) }),
 };

@@ -1,45 +1,73 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Check, X, Eye, Search } from "lucide-react";
+import { Check, X, Eye, Search, AlertTriangle } from "lucide-react";
 import { GlassCard, StatusPill, Modal, inputCls, StatCard } from "@/components/dashboard/primitives";
-import { adminWithdrawals, type AdminWithdrawal } from "@/lib/admin-data";
+import { adminApi, ApiError, type AdminTransaction } from "@/lib/api";
 
-export const Route = createFileRoute("/admin/withdrawals")({ component: WithdrawalsPage });
+export const Route = createFileRoute("/admin/withdrawals")({ ssr: false, component: WithdrawalsPage });
 
 function WithdrawalsPage() {
-  const [rows, setRows] = useState<AdminWithdrawal[]>(adminWithdrawals);
+  const [rows, setRows] = useState<AdminTransaction[]>([]);
+  const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState("All");
-  const [view, setView] = useState<AdminWithdrawal | null>(null);
+  const [view, setView] = useState<AdminTransaction | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const load = () => {
+    setLoading(true);
+    adminApi.listWithdrawals(filter)
+      .then((r) => setRows(r.withdrawals))
+      .catch((err) => toast.error(err instanceof ApiError ? err.message : "Could not load withdrawals"))
+      .finally(() => setLoading(false));
+  };
+  useEffect(load, [filter]);
 
   const filtered = useMemo(() => rows.filter(r =>
-    (filter === "All" || r.status === filter) &&
-    (q === "" || r.user.toLowerCase().includes(q.toLowerCase()) || r.id.toLowerCase().includes(q.toLowerCase()))
-  ), [rows, q, filter]);
+    q === "" || (r.user?.name ?? "").toLowerCase().includes(q.toLowerCase()) || r.ref.toLowerCase().includes(q.toLowerCase())
+  ), [rows, q]);
 
-  const setStatus = (id: string, status: AdminWithdrawal["status"]) => {
-    setRows(list => list.map(r => r.id === id ? { ...r, status } : r));
-    setView(v => v && v.id === id ? { ...v, status } : v);
-    toast.success(`Withdrawal ${id} → ${status}`);
+  const pending = rows.filter(r => r.status === "Pending");
+  const completed = rows.filter(r => r.status === "Completed");
+  const rejected = rows.filter(r => r.status === "Rejected");
+
+  const act = async (id: string, action: "approve" | "reject") => {
+    setBusyId(id);
+    try {
+      const { transaction } = action === "approve" ? await adminApi.approveTransaction(id) : await adminApi.rejectTransaction(id);
+      setRows((list) => list.map((r) => (r._id === id ? { ...r, ...transaction } : r)));
+      setView((v) => (v && v._id === id ? { ...v, ...transaction } : v));
+      toast.success(`Withdrawal ${action === "approve" ? "approved" : "rejected"}`);
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Could not update withdrawal");
+    } finally {
+      setBusyId(null);
+    }
   };
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        <StatCard label="Pending" value={rows.filter(r=>r.status==="Pending").length} delta={`$${rows.filter(r=>r.status==="Pending").reduce((a,b)=>a+b.amount,0).toLocaleString()}`}/>
-        <StatCard label="Completed" value={rows.filter(r=>r.status==="Completed").length}/>
-        <StatCard label="Failed" value={rows.filter(r=>r.status==="Failed").length} trend="down"/>
-        <StatCard label="Total Out" value={rows.reduce((a,b)=>a+b.amount,0)} prefix="$"/>
+        <StatCard label="Pending" value={pending.length} delta={`$${pending.reduce((a,b)=>a+Math.abs(b.amount),0).toLocaleString()}`} trend="down"/>
+        <StatCard label="Completed" value={completed.length}/>
+        <StatCard label="Rejected" value={rejected.length} trend="down"/>
+        <StatCard label="Total Paid Out" value={completed.reduce((a,b)=>a+Math.abs(b.amount),0)} prefix="$"/>
       </div>
+
+      {pending.length > 0 && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 flex items-center gap-2.5 text-xs text-amber-200/90">
+          <AlertTriangle size={14} className="text-amber-400 shrink-0"/> Approving deducts the amount from the user's available balance — the backend already validated they had enough at request time.
+        </div>
+      )}
 
       <GlassCard className="p-4 flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[220px]">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"/>
-          <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search user or ID…" className={`${inputCls} pl-10`}/>
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search user or reference…" className={`${inputCls} pl-10`}/>
         </div>
         <select value={filter} onChange={e=>setFilter(e.target.value)} className={`${inputCls} w-auto`}>
-          {["All","Pending","Completed","Failed"].map(s => <option key={s}>{s}</option>)}
+          {["All","Pending","Completed","Rejected"].map(s => <option key={s}>{s}</option>)}
         </select>
       </GlassCard>
 
@@ -47,24 +75,27 @@ function WithdrawalsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-[11px] uppercase tracking-wider text-muted-foreground border-b border-white/5">
-              <tr>{["ID","User","Method","Amount","Status","Date","Ref",""].map(h => <th key={h} className="text-left px-4 py-3">{h}</th>)}</tr>
+              <tr>{["User","Method","Amount","Status","Date","Ref",""].map(h => <th key={h} className="text-left px-4 py-3">{h}</th>)}</tr>
             </thead>
             <tbody>
-              {filtered.map(r => (
-                <tr key={r.id} className="border-b border-white/5 hover:bg-white/[0.02]">
-                  <td className="px-4 py-3 font-mono text-xs">{r.id}</td>
-                  <td className="px-4 py-3"><div className="font-medium">{r.user}</div><div className="text-[10px] text-muted-foreground">{r.email}</div></td>
+              {loading ? (
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground text-sm">Loading…</td></tr>
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground text-sm">No withdrawals match.</td></tr>
+              ) : filtered.map(r => (
+                <tr key={r._id} className="border-b border-white/5 hover:bg-white/[0.02]">
+                  <td className="px-4 py-3"><div className="font-medium">{r.user?.name ?? "Unknown"}</div><div className="text-[10px] text-muted-foreground">{r.user?.email}</div></td>
                   <td className="px-4 py-3 text-xs">{r.method}</td>
-                  <td className="px-4 py-3 font-semibold">${r.amount.toLocaleString()}</td>
+                  <td className="px-4 py-3 font-semibold">${Math.abs(r.amount).toLocaleString()}</td>
                   <td className="px-4 py-3"><StatusPill status={r.status}/></td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">{r.date}</td>
-                  <td className="px-4 py-3 text-xs font-mono">{r.txRef}</td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(r.createdAt).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-xs font-mono">{r.ref}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
                       <button onClick={() => setView(r)} data-no-toast className="p-1.5 rounded-lg hover:bg-white/10" aria-label="View"><Eye size={14}/></button>
                       {r.status === "Pending" && <>
-                        <button onClick={() => setStatus(r.id, "Completed")} data-no-toast className="p-1.5 rounded-lg text-emerald-400 hover:bg-emerald-400/10" aria-label="Approve"><Check size={14}/></button>
-                        <button onClick={() => setStatus(r.id, "Failed")} data-no-toast className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-400/10" aria-label="Reject"><X size={14}/></button>
+                        <button onClick={() => act(r._id, "approve")} disabled={busyId===r._id} data-no-toast className="p-1.5 rounded-lg text-emerald-400 hover:bg-emerald-400/10 disabled:opacity-50" aria-label="Approve"><Check size={14}/></button>
+                        <button onClick={() => act(r._id, "reject")} disabled={busyId===r._id} data-no-toast className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-400/10 disabled:opacity-50" aria-label="Reject"><X size={14}/></button>
                       </>}
                     </div>
                   </td>
@@ -75,16 +106,20 @@ function WithdrawalsPage() {
         </div>
       </GlassCard>
 
-      <Modal open={!!view} onClose={() => setView(null)} title={view ? `Withdrawal ${view.id}` : ""}>
+      <Modal open={!!view} onClose={() => setView(null)} title={view ? `Withdrawal ${view.ref}` : ""}>
         {view && (
-          <div className="space-y-2 text-sm">
-            <Row k="User" v={view.user}/><Row k="Email" v={view.email}/>
-            <Row k="Method" v={view.method}/><Row k="Amount" v={`$${view.amount.toLocaleString()}`}/>
-            <Row k="Reference" v={view.txRef}/><Row k="Date" v={view.date}/><Row k="Status" v={view.status}/>
+          <div className="space-y-3 text-sm">
+            <Row k="User" v={view.user?.name ?? "Unknown"}/>
+            <Row k="Email" v={view.user?.email ?? "—"}/>
+            <Row k="Method" v={view.method}/>
+            <Row k="Amount" v={`$${Math.abs(view.amount).toLocaleString()}`}/>
+            <Row k="Reference" v={view.ref}/>
+            <Row k="Date" v={new Date(view.createdAt).toLocaleString()}/>
+            <Row k="Status" v={view.status}/>
             {view.status === "Pending" && (
               <div className="grid grid-cols-2 gap-3 pt-2">
-                <button onClick={() => setStatus(view.id, "Failed")} className="py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-sm">Reject</button>
-                <button onClick={() => setStatus(view.id, "Completed")} className="py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium">Approve payout</button>
+                <button data-no-toast onClick={() => act(view._id, "reject")} disabled={busyId===view._id} className="py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-sm disabled:opacity-50">Reject</button>
+                <button data-no-toast onClick={() => act(view._id, "approve")} disabled={busyId===view._id} className="py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium disabled:opacity-50">Approve withdrawal</button>
               </div>
             )}
           </div>
@@ -93,6 +128,7 @@ function WithdrawalsPage() {
     </div>
   );
 }
+
 function Row({ k, v }: { k: string; v: string }) {
   return <div className="flex items-center justify-between glass rounded-lg px-3 py-2"><span className="text-muted-foreground text-xs">{k}</span><span className="font-medium">{v}</span></div>;
 }

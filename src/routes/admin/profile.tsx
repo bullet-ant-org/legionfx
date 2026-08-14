@@ -1,81 +1,141 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { ShieldCheck, Key, Smartphone, LogOut } from "lucide-react";
-import { GlassCard, SectionTitle, Field, inputCls, Modal, StatusPill } from "@/components/dashboard/primitives";
-import { signOut } from "@/lib/auth";
+import { ShieldCheck, Key, Smartphone, Mail } from "lucide-react";
+import { GlassCard, SectionTitle, Modal, Field, inputCls } from "@/components/dashboard/primitives";
+import { api, ApiError } from "@/lib/api";
+import { setSessionUser, signOut, getSession, refreshSession, type Session } from "@/lib/auth";
 
-export const Route = createFileRoute("/admin/profile")({ component: AdminProfilePage });
+export const Route = createFileRoute("/admin/profile")({ ssr: false, component: AdminProfilePage });
 
 function AdminProfilePage() {
+  const [session, setSession] = useState<Session | null>(() => getSession());
+  const refresh = () => { refreshSession().then(setSession); };
+  useEffect(() => { refresh(); }, []);
+  const navigate = useNavigate();
+  const [editOpen, setEditOpen] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
-  const [tfaOpen, setTfaOpen] = useState(false);
+  const twoFAEnabled = !!session?.user?.twoFactorEnabled;
+
+  const name = session?.name || "Admin";
+  const email = session?.email || "";
+  const initials = name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase() || "A";
+
+  const toggle2FA = async () => {
+    try {
+      const { user } = await api.updateProfile({ twoFactorEnabled: !twoFAEnabled });
+      setSessionUser(user);
+      refresh();
+      toast.success(twoFAEnabled ? "2FA disabled" : "2FA enabled");
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Could not update 2FA");
+    }
+  };
+
   return (
-    <div className="grid lg:grid-cols-[1fr_1.4fr] gap-4">
-      <GlassCard className="p-6 text-center">
-        <div className="h-24 w-24 mx-auto rounded-2xl brand-gradient grid place-items-center text-brand-foreground text-2xl font-bold shadow-glow">A</div>
-        <div className="mt-4 text-lg font-semibold">LEGIONFX Admin</div>
-        <div className="text-xs text-muted-foreground">admin@gmail.com</div>
-        <div className="mt-3 inline-flex items-center gap-1 text-[10px] uppercase tracking-widest text-brand"><ShieldCheck size={12}/> Super Admin</div>
-        <div className="mt-6 grid grid-cols-3 gap-2 text-xs">
-          <Mini k="Sessions" v="12"/><Mini k="Actions" v="284"/><Mini k="Since" v="2023"/>
+    <div className="space-y-4">
+      <GlassCard className="p-6 relative overflow-hidden">
+        <div className="absolute inset-0 h-32 brand-gradient opacity-20" />
+        <div className="relative flex items-center gap-5">
+          <div className="h-20 w-20 rounded-2xl brand-gradient grid place-items-center text-2xl font-bold text-brand-foreground shadow-glow overflow-hidden">
+            {session?.user?.avatarUrl ? <img src={session.user.avatarUrl as string} className="h-full w-full object-cover" alt={name} /> : initials}
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2"><h1 className="text-xl font-bold">{name}</h1><span className="text-[10px] px-2 py-1 rounded-full bg-brand/15 text-brand border border-brand/30 inline-flex items-center gap-1"><ShieldCheck size={10}/> Admin</span></div>
+            <div className="text-sm text-muted-foreground flex items-center gap-1.5 mt-0.5"><Mail size={12}/> {email}</div>
+          </div>
+          <button onClick={() => setEditOpen(true)} className="px-4 py-2 rounded-xl glass hover:bg-white/10 text-sm">Edit Profile</button>
         </div>
-        <button onClick={() => { signOut(); window.location.href = "/login"; }} className="mt-6 w-full py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-sm inline-flex items-center justify-center gap-2"><LogOut size={14}/> Sign out</button>
       </GlassCard>
 
-      <div className="space-y-4">
+      <div className="grid lg:grid-cols-2 gap-4">
         <GlassCard className="p-5">
-          <SectionTitle title="Profile" subtitle="Basic admin identity"/>
-          <form onSubmit={(e)=>{e.preventDefault(); toast.success("Profile saved");}} className="grid sm:grid-cols-2 gap-3">
-            <Field label="Full Name"><input defaultValue="LEGIONFX Admin" className={inputCls}/></Field>
-            <Field label="Email"><input defaultValue="admin@gmail.com" className={inputCls}/></Field>
-            <Field label="Role"><input disabled defaultValue="Super Admin" className={inputCls}/></Field>
-            <Field label="Phone"><input defaultValue="+1 (555) 010-4520" className={inputCls}/></Field>
-            <div className="sm:col-span-2"><button className="w-full py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium">Save profile</button></div>
-          </form>
+          <SectionTitle title="Password" />
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5">
+            <div className="h-10 w-10 rounded-lg glass grid place-items-center text-brand"><Key size={16}/></div>
+            <div className="flex-1 text-sm font-medium">••••••••••••</div>
+            <button data-no-toast onClick={() => setPwOpen(true)} className="px-3 py-1.5 rounded-lg brand-gradient text-brand-foreground text-xs font-medium">Change</button>
+          </div>
         </GlassCard>
-
         <GlassCard className="p-5">
-          <SectionTitle title="Security" subtitle="Protect the admin console"/>
-          <div className="space-y-3">
-            <div className="glass rounded-xl p-3 flex items-center gap-3">
-              <Key size={16} className="text-brand"/>
-              <div className="flex-1"><div className="text-sm font-medium">Password</div><div className="text-[10px] text-muted-foreground">Last changed 42 days ago</div></div>
-              <button onClick={() => setPwOpen(true)} data-no-toast className="px-3 py-2 rounded-lg glass hover:bg-white/10 text-xs">Change</button>
-            </div>
-            <div className="glass rounded-xl p-3 flex items-center gap-3">
-              <Smartphone size={16} className="text-brand"/>
-              <div className="flex-1"><div className="text-sm font-medium">Two-factor authentication</div><div className="text-[10px] text-muted-foreground">Authenticator app</div></div>
-              <StatusPill status="Active"/>
-              <button onClick={() => setTfaOpen(true)} data-no-toast className="px-3 py-2 rounded-lg glass hover:bg-white/10 text-xs">Manage</button>
-            </div>
+          <SectionTitle title="Two-Factor Authentication" subtitle="Basic flag only — full TOTP support is coming soon" />
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5">
+            <div className={`h-10 w-10 rounded-lg grid place-items-center ${twoFAEnabled ? "bg-emerald-400/10 text-emerald-400" : "glass text-brand"}`}><Smartphone size={16}/></div>
+            <div className="flex-1 text-sm font-medium">{twoFAEnabled ? "Enabled" : "Disabled"}</div>
+            <button data-no-toast onClick={toggle2FA} className={`px-3 py-1.5 rounded-lg text-xs font-medium ${twoFAEnabled ? "glass hover:bg-white/10 text-rose-400" : "brand-gradient text-brand-foreground"}`}>{twoFAEnabled ? "Disable" : "Enable"}</button>
           </div>
         </GlassCard>
       </div>
 
-      <Modal open={pwOpen} onClose={()=>setPwOpen(false)} title="Change admin password">
-        <form onSubmit={(e)=>{e.preventDefault(); setPwOpen(false); toast.success("Password updated");}} className="space-y-3">
-          <Field label="Current password"><input type="password" required className={inputCls}/></Field>
-          <Field label="New password"><input type="password" required className={inputCls}/></Field>
-          <Field label="Confirm new password"><input type="password" required className={inputCls}/></Field>
-          <button type="submit" className="w-full py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium">Update password</button>
-        </form>
-      </Modal>
+      <GlassCard className="p-5">
+        <button data-no-toast onClick={async () => { await signOut(); navigate({ to: "/login" }); }} className="px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-sm font-medium">Sign Out</button>
+      </GlassCard>
 
-      <Modal open={tfaOpen} onClose={()=>setTfaOpen(false)} title="Two-factor authentication">
-        <div className="space-y-3 text-sm">
-          <p className="text-muted-foreground">2FA is currently <span className="text-emerald-400">active</span> via your authenticator app.</p>
-          <div className="glass rounded-xl p-3 font-mono text-xs">Recovery codes: L3G-9F2-84K · L3G-88J-11P · L3G-72M-56R</div>
-          <div className="grid grid-cols-2 gap-3">
-            <button onClick={()=>{setTfaOpen(false); toast.success("Recovery codes regenerated");}} className="py-2.5 rounded-xl glass hover:bg-white/10 text-sm">Regenerate</button>
-            <button onClick={()=>{setTfaOpen(false); toast.success("2FA disabled");}} className="py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-sm">Disable 2FA</button>
-          </div>
-        </div>
-      </Modal>
+      <EditModal open={editOpen} onClose={() => setEditOpen(false)} name={name} phone={(session?.user?.phone as string) || ""} country={(session?.user?.country as string) || ""} avatarUrl={(session?.user?.avatarUrl as string) || ""} onSaved={refresh} />
+      <PasswordModal open={pwOpen} onClose={() => setPwOpen(false)} />
     </div>
   );
 }
 
-function Mini({ k, v }: { k: string; v: string }) {
-  return <div className="glass rounded-lg p-2"><div className="text-[9px] uppercase text-muted-foreground">{k}</div><div className="text-sm font-semibold mt-0.5">{v}</div></div>;
+function EditModal({ open, onClose, name, phone, country, avatarUrl, onSaved }: { open: boolean; onClose: () => void; name: string; phone: string; country: string; avatarUrl: string; onSaved: () => void }) {
+  const [form, setForm] = useState({ name, phone, country, avatarUrl });
+  const [saving, setSaving] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim()) { toast.error("Name cannot be empty"); return; }
+    setSaving(true);
+    try {
+      const { user } = await api.updateProfile(form);
+      setSessionUser(user);
+      onSaved();
+      toast.success("Profile updated");
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Could not update profile");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} title="Edit Profile">
+      <form onSubmit={submit} className="space-y-3">
+        <Field label="Full Name"><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} /></Field>
+        <Field label="Phone"><input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputCls} /></Field>
+        <Field label="Country"><input value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} className={inputCls} /></Field>
+        <Field label="Avatar URL"><input value={form.avatarUrl} onChange={(e) => setForm({ ...form, avatarUrl: e.target.value })} className={inputCls} placeholder="https://..." /></Field>
+        <button type="submit" disabled={saving} className="w-full py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium disabled:opacity-60">{saving ? "Saving…" : "Save changes"}</button>
+      </form>
+    </Modal>
+  );
+}
+
+function PasswordModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [current, setCurrent] = useState(""); const [next, setNext] = useState(""); const [confirm, setConfirm] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (next.length < 8) { toast.error("New password must be at least 8 characters"); return; }
+    if (next !== confirm) { toast.error("Passwords do not match"); return; }
+    setSubmitting(true);
+    try {
+      await api.changePassword(current, next);
+      toast.success("Password updated");
+      setCurrent(""); setNext(""); setConfirm("");
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Could not update password");
+    } finally { setSubmitting(false); }
+  };
+  return (
+    <Modal open={open} onClose={onClose} title="Change Password">
+      <form onSubmit={submit} className="space-y-3">
+        <Field label="Current Password"><input type="password" value={current} onChange={(e) => setCurrent(e.target.value)} className={inputCls} /></Field>
+        <Field label="New Password"><input type="password" value={next} onChange={(e) => setNext(e.target.value)} className={inputCls} /></Field>
+        <Field label="Confirm New Password"><input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className={inputCls} /></Field>
+        <button type="submit" disabled={submitting} className="w-full py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium disabled:opacity-60">{submitting ? "Updating…" : "Update Password"}</button>
+      </form>
+    </Modal>
+  );
 }

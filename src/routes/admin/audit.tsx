@@ -1,43 +1,71 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Search, Download } from "lucide-react";
-import { GlassCard, inputCls } from "@/components/dashboard/primitives";
-import { auditLog } from "@/lib/admin-data";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Search, History } from "lucide-react";
+import { GlassCard, inputCls, StatCard } from "@/components/dashboard/primitives";
+import { adminApi, ApiError, type AdminAuditLog } from "@/lib/api";
 
-const extended = [
-  ...auditLog,
-  { actor: "admin@gmail.com", action: "Published signal: BTC/USD SELL @ 68400", time: "2d ago" },
-  { actor: "admin@gmail.com", action: "Created pricing plan: Enterprise", time: "3d ago" },
-  { actor: "admin@gmail.com", action: "Suspended user USR-1018", time: "4d ago" },
-  { actor: "admin@gmail.com", action: "Rejected withdrawal WDR-7015", time: "5d ago" },
-  { actor: "admin@gmail.com", action: "Verified KYC for USR-1005", time: "6d ago" },
-  { actor: "admin@gmail.com", action: "Added payment option: USDT ERC20", time: "1w ago" },
-];
-
-export const Route = createFileRoute("/admin/audit")({ component: AuditPage });
+export const Route = createFileRoute("/admin/audit")({ ssr: false, component: AuditPage });
 
 function AuditPage() {
+  const [logs, setLogs] = useState<AdminAuditLog[]>([]);
+  const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
-  const rows = extended.filter(r => q === "" || r.action.toLowerCase().includes(q.toLowerCase()));
+
+  useEffect(() => {
+    adminApi.listAuditLog()
+      .then((r) => setLogs(r.logs))
+      .catch((err) => toast.error(err instanceof ApiError ? err.message : "Could not load audit log"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filtered = useMemo(() => logs.filter((l) =>
+    q === "" ||
+    l.action.toLowerCase().includes(q.toLowerCase()) ||
+    (l.actor?.name ?? "").toLowerCase().includes(q.toLowerCase()) ||
+    l.target.toLowerCase().includes(q.toLowerCase())
+  ), [logs, q]);
+
+  const today = logs.filter((l) => new Date(l.createdAt).toDateString() === new Date().toDateString()).length;
+
   return (
     <div className="space-y-4">
-      <GlassCard className="p-4 flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[220px]">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"/>
-          <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search actions…" className={`${inputCls} pl-10`}/>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+        <StatCard label="Total Events" value={logs.length}/>
+        <StatCard label="Today" value={today}/>
+        <StatCard label="Unique Admins" value={new Set(logs.map((l) => l.actor?._id).filter(Boolean)).size}/>
+      </div>
+
+      <GlassCard className="p-4">
+        <div className="relative">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search action, admin, or target…" className={`${inputCls} pl-10`} />
         </div>
-        <button onClick={() => toast.success("Audit log exported")} className="px-3.5 py-2.5 rounded-xl glass hover:bg-white/10 text-sm inline-flex items-center gap-2"><Download size={14}/> Export CSV</button>
       </GlassCard>
+
       <GlassCard className="p-0 overflow-hidden">
-        <ul>
-          {rows.map((r,i) => (
-            <li key={i} className="px-4 py-3 border-b border-white/5 last:border-0 flex items-center justify-between text-sm hover:bg-white/[0.02]">
-              <div><div>{r.action}</div><div className="text-[10px] text-muted-foreground mt-0.5">{r.actor}</div></div>
-              <div className="text-xs text-muted-foreground">{r.time}</div>
-            </li>
-          ))}
-        </ul>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="text-[11px] uppercase tracking-wider text-muted-foreground border-b border-white/5">
+              <tr>{["Admin", "Action", "Target", "Details", "Time"].map((h) => <th key={h} className="text-left px-4 py-3">{h}</th>)}</tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground text-sm">Loading…</td></tr>
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground text-sm"><History size={18} className="mx-auto mb-2 text-muted-foreground"/>No matching activity.</td></tr>
+              ) : filtered.map((l) => (
+                <tr key={l._id} className="border-b border-white/5 hover:bg-white/[0.02]">
+                  <td className="px-4 py-3"><div className="font-medium">{l.actor?.name ?? "System"}</div><div className="text-[10px] text-muted-foreground">{l.actor?.email}</div></td>
+                  <td className="px-4 py-3"><span className="px-2 py-0.5 rounded-full bg-white/5 text-[11px] border border-white/10">{l.action}</span></td>
+                  <td className="px-4 py-3 text-xs font-mono text-muted-foreground">{l.target}</td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground max-w-[260px] truncate">{Object.entries(l.meta || {}).map(([k, v]) => `${k}: ${v}`).join(", ") || "—"}</td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(l.createdAt).toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </GlassCard>
     </div>
   );

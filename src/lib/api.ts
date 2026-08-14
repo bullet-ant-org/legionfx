@@ -164,6 +164,7 @@ export type ApiTicket = {
   replies: ApiTicketReply[];
   createdAt: string;
   updatedAt: string;
+  user?: { _id: string; name: string; email: string } | string;
   [key: string]: unknown;
 };
 
@@ -273,4 +274,183 @@ export const api = {
     request<{ ticket: ApiTicket }>("/support", { method: "POST", body: JSON.stringify({ subject, category, message, priority }) }),
   replyTicket: (id: string, body: string) =>
     request<{ ticket: ApiTicket }>(`/support/${id}/reply`, { method: "POST", body: JSON.stringify({ body }) }),
+};
+
+// ---------------------------------------------------------------------------
+// Admin API — all endpoints below require the caller's session to have
+// role: "admin"; the backend enforces this independently.
+// ---------------------------------------------------------------------------
+
+export type AdminMetrics = {
+  totalUsers: number;
+  activeUsers: number;
+  verifiedUsers: number;
+  openTickets: number;
+  activeBots: number;
+  activeChallenges: number;
+  totalDeposits: number;
+  totalWithdrawals: number;
+  pendingDeposits: number;
+  pendingWithdrawals: number;
+};
+
+export type AdminUser = ApiUser & { balance?: number };
+
+export type AdminTransaction = ApiTransaction & { user: { _id: string; name: string; email: string } | null };
+
+export type AdminAuditLog = {
+  _id: string;
+  actor: { _id: string; name: string; email: string } | null;
+  action: string;
+  target: string;
+  meta: Record<string, unknown>;
+  createdAt: string;
+};
+
+export type AdminBot = {
+  _id: string;
+  name: string;
+  pair: string;
+  risk: string;
+  description: string;
+  active: boolean;
+  users: number;
+  profit: number;
+  winRate: number;
+};
+
+export type AdminPropFirmPlan = {
+  _id: string;
+  size: number;
+  price: number;
+  profitSplit: number;
+  popular: boolean;
+  active: boolean;
+  buyers: number;
+};
+
+export type AdminCourse = {
+  _id: string;
+  title: string;
+  description: string;
+  lessonCount: number;
+  price: number;
+  published: boolean;
+  students: number;
+};
+
+export type AdminSignal = ApiSignal;
+
+export type AdminPricingPlan = {
+  _id: string;
+  name: string;
+  price: number;
+  interval: "monthly" | "yearly" | "one-time";
+  tagline: string;
+  features: string[];
+  featured: boolean;
+  active: boolean;
+  subscribers: number;
+};
+
+export type AdminPaymentMethod = {
+  _id: string;
+  user: { _id: string; name: string; email: string } | null;
+  type: string;
+  label: string;
+  verified: boolean;
+  createdAt: string;
+};
+
+export type PlatformSettings = {
+  platformName: string;
+  supportEmail: string;
+  maintenanceMode: boolean;
+  signupsOpen: boolean;
+  kycRequired: boolean;
+  minDeposit: number;
+  minWithdraw: number;
+  notifyEmail: boolean;
+  notifySms: boolean;
+  notifyPush: boolean;
+  notifyInApp: boolean;
+};
+
+export const adminApi = {
+  getMetrics: () => request<AdminMetrics>("/admin/metrics"),
+
+  listUsers: (params?: { q?: string; status?: string; plan?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.q) qs.set("q", params.q);
+    if (params?.status && params.status !== "All") qs.set("status", params.status);
+    if (params?.plan && params.plan !== "All") qs.set("plan", params.plan);
+    qs.set("limit", "500");
+    return request<{ users: AdminUser[]; total: number }>(`/admin/users?${qs.toString()}`);
+  },
+  createUser: (data: { name: string; email: string; password: string; plan?: string; role?: string }) =>
+    request<{ user: AdminUser }>("/admin/users", { method: "POST", body: JSON.stringify(data) }),
+  updateUserStatus: (id: string, status: string) =>
+    request<{ user: AdminUser }>(`/admin/users/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }) }),
+  verifyUserKyc: (id: string) => request<{ user: AdminUser }>(`/admin/users/${id}/kyc`, { method: "PATCH" }),
+  deleteUser: (id: string) => request<{ message: string }>(`/admin/users/${id}`, { method: "DELETE" }),
+  emailUser: (id: string, subject: string, message: string) =>
+    request<{ message: string }>(`/admin/users/${id}/email`, { method: "POST", body: JSON.stringify({ subject, message }) }),
+
+  listDeposits: (status = "All") => request<{ deposits: AdminTransaction[] }>(`/admin/deposits?status=${encodeURIComponent(status)}`),
+  listWithdrawals: (status = "All") => request<{ withdrawals: AdminTransaction[] }>(`/admin/withdrawals?status=${encodeURIComponent(status)}`),
+  approveTransaction: (id: string) => request<{ transaction: AdminTransaction }>(`/admin/transactions/${id}/approve`, { method: "PATCH" }),
+  rejectTransaction: (id: string) => request<{ transaction: AdminTransaction }>(`/admin/transactions/${id}/reject`, { method: "PATCH" }),
+
+  listAuditLog: () => request<{ logs: AdminAuditLog[] }>("/admin/audit"),
+  broadcastNotification: (title: string, kind: string, audience?: string) =>
+    request<{ message: string }>("/admin/notify", { method: "POST", body: JSON.stringify({ title, kind, audience }) }),
+
+  listBots: () => request<{ bots: AdminBot[] }>("/bots/admin/all"),
+  createBot: (data: { name: string; pair: string; risk: string; description?: string }) =>
+    request<{ bot: AdminBot }>("/bots", { method: "POST", body: JSON.stringify(data) }),
+  updateBot: (id: string, data: Partial<{ name: string; pair: string; risk: string; description: string; active: boolean }>) =>
+    request<{ bot: AdminBot }>(`/bots/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  deleteBot: (id: string) => request<{ message: string }>(`/bots/${id}`, { method: "DELETE" }),
+
+  listPropFirmPlans: () => request<{ plans: AdminPropFirmPlan[] }>("/prop-firm/plans/admin/all"),
+  createPropFirmPlan: (data: { size: number; price: number; profitSplit?: number; popular?: boolean; active?: boolean }) =>
+    request<{ plan: AdminPropFirmPlan }>("/prop-firm/plans", { method: "POST", body: JSON.stringify(data) }),
+  updatePropFirmPlan: (id: string, data: Partial<{ size: number; price: number; profitSplit: number; popular: boolean; active: boolean }>) =>
+    request<{ plan: AdminPropFirmPlan }>(`/prop-firm/plans/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  deletePropFirmPlan: (id: string) => request<{ message: string }>(`/prop-firm/plans/${id}`, { method: "DELETE" }),
+
+  listCourses: () => request<{ courses: AdminCourse[] }>("/academy/courses/admin/all"),
+  createCourse: (data: { title: string; description?: string; lessonCount: number; price: number; published?: boolean }) =>
+    request<{ course: AdminCourse }>("/academy/courses", { method: "POST", body: JSON.stringify(data) }),
+  updateCourse: (id: string, data: Partial<{ title: string; description: string; lessonCount: number; price: number; published: boolean }>) =>
+    request<{ course: AdminCourse }>(`/academy/courses/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  deleteCourse: (id: string) => request<{ message: string }>(`/academy/courses/${id}`, { method: "DELETE" }),
+
+  listSignals: () => request<{ signals: AdminSignal[] }>("/signals"),
+  createSignal: (data: { pair: string; direction: "BUY" | "SELL"; entry: number; sl: number; tp: number; confidence: number }) =>
+    request<{ signal: AdminSignal }>("/signals", { method: "POST", body: JSON.stringify(data) }),
+  updateSignal: (id: string, data: Partial<{ status: string; pair: string; entry: number; sl: number; tp: number; confidence: number }>) =>
+    request<{ signal: AdminSignal }>(`/signals/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  deleteSignal: (id: string) => request<{ message: string }>(`/signals/${id}`, { method: "DELETE" }),
+
+  listTickets: (status?: string) => request<{ tickets: ApiTicket[] }>(`/support/admin/all${status && status !== "All" ? `?status=${encodeURIComponent(status)}` : ""}`),
+  updateTicket: (id: string, data: Partial<{ status: string; priority: string }>) =>
+    request<{ ticket: ApiTicket }>(`/support/admin/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  replyTicket: (id: string, body: string) =>
+    request<{ ticket: ApiTicket }>(`/support/${id}/reply`, { method: "POST", body: JSON.stringify({ body }) }),
+
+  listPricingPlans: () => request<{ plans: AdminPricingPlan[] }>("/payments/admin/pricing"),
+  createPricingPlan: (data: { name: string; price: number; interval: string; tagline?: string; features?: string[]; featured?: boolean; active?: boolean }) =>
+    request<{ plan: AdminPricingPlan }>("/payments/admin/pricing", { method: "POST", body: JSON.stringify(data) }),
+  updatePricingPlan: (id: string, data: Partial<{ name: string; price: number; interval: string; tagline: string; features: string[]; featured: boolean; active: boolean }>) =>
+    request<{ plan: AdminPricingPlan }>(`/payments/admin/pricing/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  deletePricingPlan: (id: string) => request<{ message: string }>(`/payments/admin/pricing/${id}`, { method: "DELETE" }),
+
+  listPaymentMethods: () => request<{ methods: AdminPaymentMethod[] }>("/payments/admin/methods"),
+
+  getPlatformSettings: () => request<{ settings: PlatformSettings }>("/admin/platform-settings"),
+  updatePlatformSettings: (data: Partial<PlatformSettings>) =>
+    request<{ settings: PlatformSettings }>("/admin/platform-settings", { method: "PATCH", body: JSON.stringify(data) }),
+
+  // Deposit methods (crypto wallets) — already covered by api.adminListDepositMethods etc.
 };

@@ -1,78 +1,108 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Save, AlertTriangle } from "lucide-react";
 import { GlassCard, SectionTitle, Field, inputCls } from "@/components/dashboard/primitives";
-import { useTheme } from "@/lib/theme";
+import { adminApi, ApiError, type PlatformSettings } from "@/lib/api";
 
-export const Route = createFileRoute("/admin/settings")({ component: AdminSettingsPage });
+export const Route = createFileRoute("/admin/settings")({ ssr: false, component: SettingsAdminPage });
 
-function AdminSettingsPage() {
-  const { theme, setTheme } = useTheme();
-  const [maintenance, setMaintenance] = useState(false);
-  const [signup, setSignup] = useState(true);
-  const [kycRequired, setKycRequired] = useState(true);
-  const [minDeposit, setMinDeposit] = useState(50);
-  const [minWithdraw, setMinWithdraw] = useState(20);
-  const [supportEmail, setSupportEmail] = useState("support@legionfx.com");
-  const [platformName, setPlatformName] = useState("LEGIONFX");
-  const [notifs, setNotifs] = useState({ email: true, sms: false, push: true, inApp: true });
+function SettingsAdminPage() {
+  const [settings, setSettings] = useState<PlatformSettings | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    adminApi.getPlatformSettings()
+      .then((r) => setSettings(r.settings))
+      .catch((err) => toast.error(err instanceof ApiError ? err.message : "Could not load settings"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const save = async (patch: Partial<PlatformSettings>) => {
+    setSaving(true);
+    try {
+      const { settings: updated } = await adminApi.updatePlatformSettings(patch);
+      setSettings(updated);
+      toast.success("Settings saved");
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Could not save settings");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading || !settings) {
+    return <div className="grid md:grid-cols-2 gap-4">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-40 rounded-2xl glass animate-pulse" />)}</div>;
+  }
 
   return (
-    <div className="grid lg:grid-cols-2 gap-4">
+    <div className="space-y-4">
+      {settings.maintenanceMode && (
+        <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 flex items-center gap-2.5 text-xs text-amber-200/90">
+          <AlertTriangle size={14} className="text-amber-400 shrink-0" /> Maintenance mode is currently ON — regular users cannot use the platform.
+        </div>
+      )}
+
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        save({ platformName: String(fd.get("platformName") || ""), supportEmail: String(fd.get("supportEmail") || "") });
+      }}>
+        <GlassCard className="p-5">
+          <SectionTitle title="Platform Identity" />
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Platform Name"><input name="platformName" defaultValue={settings.platformName} className={inputCls} /></Field>
+            <Field label="Support Email"><input name="supportEmail" type="email" defaultValue={settings.supportEmail} className={inputCls} /></Field>
+          </div>
+          <button type="submit" disabled={saving} className="mt-4 px-5 py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium inline-flex items-center gap-2 disabled:opacity-60"><Save size={14}/> Save</button>
+        </GlassCard>
+      </form>
+
       <GlassCard className="p-5">
-        <SectionTitle title="Platform" subtitle="Global identity and public settings"/>
-        <div className="space-y-3">
-          <Field label="Platform Name"><input value={platformName} onChange={e=>setPlatformName(e.target.value)} className={inputCls}/></Field>
-          <Field label="Support Email"><input value={supportEmail} onChange={e=>setSupportEmail(e.target.value)} className={inputCls}/></Field>
-          <Field label="Theme">
-            <div className="grid grid-cols-2 gap-2">
-              {(["dark","light"] as const).map(t => (
-                <button key={t} onClick={() => setTheme(t)} className={`py-2 rounded-lg text-sm border ${theme === t ? "border-brand bg-brand/10 text-brand" : "border-white/10 text-muted-foreground hover:bg-white/5"}`}>{t}</button>
-              ))}
-            </div>
-          </Field>
-          <button onClick={() => toast.success("Platform settings saved")} className="w-full mt-2 py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium">Save changes</button>
+        <SectionTitle title="Access & Compliance" />
+        <div className="space-y-2">
+          <ToggleRow label="Maintenance Mode" desc="Blocks regular users from the app entirely" checked={settings.maintenanceMode} onChange={(v) => save({ maintenanceMode: v })} danger />
+          <ToggleRow label="Signups Open" desc="Allow new account registration" checked={settings.signupsOpen} onChange={(v) => save({ signupsOpen: v })} />
+          <ToggleRow label="KYC Required" desc="Require identity verification before withdrawals" checked={settings.kycRequired} onChange={(v) => save({ kycRequired: v })} />
         </div>
       </GlassCard>
 
-      <GlassCard className="p-5">
-        <SectionTitle title="Access" subtitle="User signup and compliance"/>
-        <div className="space-y-3">
-          <Toggle label="Maintenance mode" desc="Show a maintenance banner and disable trades." checked={maintenance} onChange={setMaintenance}/>
-          <Toggle label="Signups open" desc="Allow new user registrations." checked={signup} onChange={setSignup}/>
-          <Toggle label="KYC required" desc="Users must verify identity before withdrawals." checked={kycRequired} onChange={setKycRequired}/>
-        </div>
-      </GlassCard>
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        save({ minDeposit: Number(fd.get("minDeposit")), minWithdraw: Number(fd.get("minWithdraw")) });
+      }}>
+        <GlassCard className="p-5">
+          <SectionTitle title="Wallet Limits" />
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Minimum Deposit ($)"><input name="minDeposit" type="number" defaultValue={settings.minDeposit} className={inputCls} /></Field>
+            <Field label="Minimum Withdrawal ($)"><input name="minWithdraw" type="number" defaultValue={settings.minWithdraw} className={inputCls} /></Field>
+          </div>
+          <button type="submit" disabled={saving} className="mt-4 px-5 py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium inline-flex items-center gap-2 disabled:opacity-60"><Save size={14}/> Save</button>
+        </GlassCard>
+      </form>
 
       <GlassCard className="p-5">
-        <SectionTitle title="Finance" subtitle="Deposit and withdrawal thresholds"/>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Min deposit ($)"><input type="number" value={minDeposit} onChange={e=>setMinDeposit(Number(e.target.value))} className={inputCls}/></Field>
-          <Field label="Min withdraw ($)"><input type="number" value={minWithdraw} onChange={e=>setMinWithdraw(Number(e.target.value))} className={inputCls}/></Field>
-        </div>
-        <button onClick={() => toast.success("Finance thresholds saved")} className="w-full mt-4 py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium">Save</button>
-      </GlassCard>
-
-      <GlassCard className="p-5">
-        <SectionTitle title="Notification Channels" subtitle="Enable broadcast channels globally"/>
-        <div className="space-y-3">
-          {(["email","sms","push","inApp"] as const).map(k => (
-            <Toggle key={k} label={k === "inApp" ? "In-App" : k.toUpperCase()} desc={`Send ${k} notifications to users.`} checked={notifs[k]} onChange={(v)=>setNotifs({ ...notifs, [k]: v })}/>
-          ))}
+        <SectionTitle title="Notification Channels" subtitle="Which channels admin broadcasts are allowed to use — SMS/push delivery isn't built yet, this just tracks intent" />
+        <div className="space-y-2">
+          <ToggleRow label="Email" desc="" checked={settings.notifyEmail} onChange={(v) => save({ notifyEmail: v })} />
+          <ToggleRow label="SMS" desc="" checked={settings.notifySms} onChange={(v) => save({ notifySms: v })} />
+          <ToggleRow label="Push" desc="" checked={settings.notifyPush} onChange={(v) => save({ notifyPush: v })} />
+          <ToggleRow label="In-App" desc="" checked={settings.notifyInApp} onChange={(v) => save({ notifyInApp: v })} />
         </div>
       </GlassCard>
     </div>
   );
 }
 
-function Toggle({ label, desc, checked, onChange }: { label: string; desc: string; checked: boolean; onChange: (v: boolean) => void }) {
+function ToggleRow({ label, desc, checked, onChange, danger }: { label: string; desc: string; checked: boolean; onChange: (v: boolean) => void; danger?: boolean }) {
   return (
-    <label className="glass rounded-xl p-3 flex items-center gap-3 cursor-pointer">
-      <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium">{label}</div>
-        <div className="text-[10px] text-muted-foreground">{desc}</div>
-      </div>
-      <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="accent-[oklch(0.72_0.19_50)] scale-125"/>
-    </label>
+    <div className={`flex items-center gap-3 p-3 rounded-xl border ${danger && checked ? "bg-rose-500/10 border-rose-500/30" : "bg-white/[0.03] border-white/5"}`}>
+      <div className="flex-1 min-w-0"><div className="text-sm font-medium">{label}</div>{desc && <div className="text-[10px] text-muted-foreground">{desc}</div>}</div>
+      <button onClick={() => onChange(!checked)} className={`h-6 w-11 rounded-full transition relative shrink-0 ${checked ? (danger ? "bg-rose-500" : "brand-gradient") : "bg-white/10"}`}>
+        <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${checked ? "left-[22px]" : "left-0.5"}`} />
+      </button>
+    </div>
   );
 }

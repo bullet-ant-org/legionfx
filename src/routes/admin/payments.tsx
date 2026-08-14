@@ -1,104 +1,69 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Pencil } from "lucide-react";
-import { GlassCard, SectionTitle, Modal, Field, inputCls } from "@/components/dashboard/primitives";
-import { paymentOptions, type PaymentOption } from "@/lib/admin-data";
+import { CreditCard, Wallet, ArrowRight, Check } from "lucide-react";
+import { GlassCard, SectionTitle, StatCard } from "@/components/dashboard/primitives";
+import { adminApi, ApiError, type AdminPaymentMethod } from "@/lib/api";
 
-export const Route = createFileRoute("/admin/payments")({ component: PaymentsPage });
+export const Route = createFileRoute("/admin/payments")({ ssr: false, component: PaymentsAdminPage });
 
-function PaymentsPage() {
-  const [items, setItems] = useState<PaymentOption[]>(paymentOptions);
-  const [editing, setEditing] = useState<PaymentOption | null>(null);
-  const [addOpen, setAddOpen] = useState(false);
+function PaymentsAdminPage() {
+  const [methods, setMethods] = useState<AdminPaymentMethod[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const toggle = (id: string) => {
-    setItems(list => list.map(p => p.id === id ? { ...p, enabled: !p.enabled } : p));
-    toast.success("Payment option updated");
-  };
-  const remove = (id: string) => { setItems(list => list.filter(p => p.id !== id)); toast.success("Removed"); };
-  const save = (p: PaymentOption) => {
-    setItems(list => list.some(x => x.id === p.id) ? list.map(x => x.id === p.id ? p : x) : [p, ...list]);
-    toast.success("Saved");
-    setEditing(null); setAddOpen(false);
-  };
+  useEffect(() => {
+    adminApi.listPaymentMethods()
+      .then((r) => setMethods(r.methods))
+      .catch((err) => toast.error(err instanceof ApiError ? err.message : "Could not load payment methods"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const verified = methods.filter((m) => m.verified).length;
 
   return (
     <div className="space-y-4">
-      <GlassCard className="p-4 flex items-center justify-between">
+      <GlassCard className="p-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="text-sm font-semibold">Payment Rails</div>
-          <div className="text-xs text-muted-foreground">Configure which methods users can deposit and withdraw with.</div>
+          <div className="text-sm font-semibold flex items-center gap-2"><Wallet size={16} className="text-brand"/> Deposit Wallets (Crypto)</div>
+          <div className="text-xs text-muted-foreground mt-0.5">Manage the wallet addresses clients pay into from the checkout — that's a separate page.</div>
         </div>
-        <button onClick={() => setAddOpen(true)} data-no-toast className="px-3.5 py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium inline-flex items-center gap-2"><Plus size={14}/> Add Method</button>
+        <Link to="/admin/deposit-methods" className="px-4 py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium inline-flex items-center gap-2">
+          Manage Deposit Wallets <ArrowRight size={14}/>
+        </Link>
       </GlassCard>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {items.map(p => (
-          <GlassCard key={p.id} className="p-5">
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="text-sm font-semibold">{p.name}</div>
-                <div className="text-[10px] uppercase tracking-widest text-brand mt-0.5">{p.type} {p.network ? `· ${p.network}` : ""}</div>
-              </div>
-              <label className="inline-flex items-center gap-2 cursor-pointer">
-                <span className="text-[10px] text-muted-foreground">{p.enabled ? "Enabled" : "Disabled"}</span>
-                <input type="checkbox" checked={p.enabled} onChange={() => toggle(p.id)} className="accent-[oklch(0.72_0.19_50)]"/>
-              </label>
-            </div>
-            <div className="mt-3 text-xs font-mono truncate bg-white/[0.03] border border-white/5 rounded-lg px-2.5 py-2">{p.address}</div>
-            <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
-              <Mini k="Min" v={`$${p.min}`}/><Mini k="Max" v={`$${(p.max/1000).toFixed(0)}K`}/><Mini k="Fee" v={`${p.fee}%`}/>
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <button onClick={() => setEditing(p)} data-no-toast className="py-2 rounded-lg glass hover:bg-white/10 text-xs inline-flex items-center justify-center gap-1.5"><Pencil size={12}/> Edit</button>
-              <button onClick={() => remove(p.id)} data-no-toast className="py-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs inline-flex items-center justify-center gap-1.5"><Trash2 size={12}/> Delete</button>
-            </div>
-          </GlassCard>
-        ))}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <StatCard label="Saved Methods" value={methods.length} icon={<CreditCard size={14}/>}/>
+        <StatCard label="Verified" value={verified} icon={<Check size={14}/>}/>
       </div>
 
-      <PaymentModal open={!!editing || addOpen} onClose={() => { setEditing(null); setAddOpen(false); }} initial={editing} onSave={save}/>
+      <GlassCard className="p-5">
+        <SectionTitle title="User Payment Methods" subtitle="Cards / accounts users have saved on their own wallet page — read-only" />
+        {loading ? (
+          <div className="space-y-2">{Array.from({length:4}).map((_,i)=><div key={i} className="h-14 rounded-xl glass animate-pulse"/>)}</div>
+        ) : methods.length === 0 ? (
+          <div className="text-center py-10 text-sm text-muted-foreground">No users have added a payment method yet.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-[11px] uppercase tracking-wider text-muted-foreground border-b border-white/5">
+                <tr>{["User","Type","Label","Verified","Added"].map(h => <th key={h} className="text-left px-3 py-2">{h}</th>)}</tr>
+              </thead>
+              <tbody>
+                {methods.map((m) => (
+                  <tr key={m._id} className="border-b border-white/5 hover:bg-white/[0.02]">
+                    <td className="px-3 py-2.5"><div className="font-medium">{m.user?.name ?? "Unknown"}</div><div className="text-[10px] text-muted-foreground">{m.user?.email}</div></td>
+                    <td className="px-3 py-2.5 text-xs">{m.type}</td>
+                    <td className="px-3 py-2.5 text-xs text-muted-foreground">{m.label}</td>
+                    <td className="px-3 py-2.5">{m.verified ? <span className="text-emerald-400 text-xs inline-flex items-center gap-1"><Check size={11}/> Verified</span> : <span className="text-muted-foreground text-xs">Unverified</span>}</td>
+                    <td className="px-3 py-2.5 text-xs text-muted-foreground">{new Date(m.createdAt).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </GlassCard>
     </div>
-  );
-}
-
-function Mini({ k, v }: { k: string; v: string }) {
-  return <div className="glass rounded-lg px-2 py-1.5 text-center"><div className="text-[9px] uppercase text-muted-foreground">{k}</div><div className="font-medium">{v}</div></div>;
-}
-
-function PaymentModal({ open, onClose, initial, onSave }: { open: boolean; onClose: () => void; initial: PaymentOption | null; onSave: (p: PaymentOption) => void }) {
-  return (
-    <Modal open={open} onClose={onClose} title={initial ? "Edit payment method" : "Add payment method"}>
-      <form onSubmit={(e) => {
-        e.preventDefault();
-        const fd = new FormData(e.currentTarget);
-        onSave({
-          id: initial?.id || `pay-${Date.now()}`,
-          name: String(fd.get("name") || ""),
-          type: String(fd.get("type") || "Crypto") as PaymentOption["type"],
-          address: String(fd.get("address") || ""),
-          network: String(fd.get("network") || "") || undefined,
-          enabled: fd.get("enabled") === "on",
-          min: Number(fd.get("min") || 0),
-          max: Number(fd.get("max") || 0),
-          fee: Number(fd.get("fee") || 0),
-        });
-      }} className="space-y-3">
-        <Field label="Name"><input name="name" required defaultValue={initial?.name} className={inputCls}/></Field>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Type"><select name="type" defaultValue={initial?.type || "Crypto"} className={inputCls}>{["Crypto","Card","Bank","Wallet"].map(t => <option key={t}>{t}</option>)}</select></Field>
-          <Field label="Network"><input name="network" defaultValue={initial?.network} className={inputCls}/></Field>
-        </div>
-        <Field label="Address / Reference"><input name="address" required defaultValue={initial?.address} className={inputCls}/></Field>
-        <div className="grid grid-cols-3 gap-3">
-          <Field label="Min $"><input name="min" type="number" defaultValue={initial?.min ?? 50} className={inputCls}/></Field>
-          <Field label="Max $"><input name="max" type="number" defaultValue={initial?.max ?? 100000} className={inputCls}/></Field>
-          <Field label="Fee %"><input name="fee" type="number" step="0.1" defaultValue={initial?.fee ?? 0} className={inputCls}/></Field>
-        </div>
-        <label className="flex items-center gap-2 text-xs text-muted-foreground"><input type="checkbox" name="enabled" defaultChecked={initial?.enabled ?? true} className="accent-[oklch(0.72_0.19_50)]"/> Enabled for users</label>
-        <button type="submit" className="w-full py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium">{initial ? "Save changes" : "Add method"}</button>
-      </form>
-    </Modal>
   );
 }

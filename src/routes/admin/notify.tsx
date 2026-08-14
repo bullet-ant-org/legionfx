@@ -1,94 +1,96 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Send, Users, Calendar, Trash2 } from "lucide-react";
-import { GlassCard, SectionTitle, StatusPill, Field, inputCls } from "@/components/dashboard/primitives";
-import { sentNotifications, type AdminNotification } from "@/lib/admin-data";
+import { Send, Bell, Users } from "lucide-react";
+import { GlassCard, SectionTitle, Field, inputCls } from "@/components/dashboard/primitives";
+import { adminApi, ApiError, type AdminAuditLog, type AdminUser } from "@/lib/api";
 
-export const Route = createFileRoute("/admin/notify")({ component: NotifyPage });
+export const Route = createFileRoute("/admin/notify")({ ssr: false, component: NotifyPage });
 
-const audiences = ["All Users","Elite","Pro","Starter","Prop Firm","Bots"] as const;
-const channels = ["In-App","Email","SMS","Push"] as const;
+const audiences = [
+  { value: "all", label: "All Users" },
+  { value: "Starter", label: "Starter plan" },
+  { value: "Pro", label: "Pro plan" },
+  { value: "Elite", label: "Elite plan" },
+  { value: "Enterprise", label: "Enterprise plan" },
+];
 
 function NotifyPage() {
-  const [items, setItems] = useState<AdminNotification[]>(sentNotifications);
   const [title, setTitle] = useState("");
-  const [message, setMessage] = useState("");
-  const [audience, setAudience] = useState<typeof audiences[number]>("All Users");
-  const [channel, setChannel] = useState<typeof channels[number]>("In-App");
-  const [schedule, setSchedule] = useState("");
+  const [audience, setAudience] = useState("all");
+  const [sending, setSending] = useState(false);
+  const [history, setHistory] = useState<AdminAuditLog[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
 
-  const audienceSize = (a: string) => a === "All Users" ? 5284 : a === "Elite" ? 640 : a === "Pro" ? 2140 : a === "Starter" ? 1204 : a === "Prop Firm" ? 312 : 148;
+  useEffect(() => {
+    adminApi.listAuditLog()
+      .then((r) => setHistory(r.logs.filter((l) => l.action === "notify.broadcast")))
+      .catch(() => {})
+      .finally(() => setLoadingHistory(false));
+    adminApi.listUsers({}).then((r) => setUsers(r.users)).catch(() => {});
+  }, []);
 
-  const send = (e: React.FormEvent) => {
+  const audienceSize = useMemo(() => {
+    if (audience === "all") return users.length;
+    return users.filter((u) => u.plan === audience).length;
+  }, [audience, users]);
+
+  const send = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !message.trim()) { toast.error("Fill title and message"); return; }
-    const n: AdminNotification = {
-      id: `n-${Date.now()}`,
-      title, message, audience, channel,
-      status: schedule ? "Scheduled" : "Sent",
-      date: schedule || new Date().toISOString().slice(0,10),
-      recipients: audienceSize(audience),
-    };
-    setItems([n, ...items]);
-    setTitle(""); setMessage(""); setSchedule("");
-    toast.success(schedule ? "Notification scheduled" : `Sent to ${n.recipients.toLocaleString()} users`);
-  };
-
-  const remove = (id: string) => { setItems(items.filter(i => i.id !== id)); toast.success("Notification removed"); };
-  const draft = () => {
-    if (!title.trim()) { toast.error("Title required"); return; }
-    setItems([{ id: `n-${Date.now()}`, title, message, audience, channel, status: "Draft", date: new Date().toISOString().slice(0,10), recipients: audienceSize(audience) }, ...items]);
-    toast.success("Draft saved");
+    if (!title.trim()) { toast.error("Enter a message title"); return; }
+    setSending(true);
+    try {
+      await adminApi.broadcastNotification(title.trim(), "info", audience);
+      toast.success(`Sent to ${audienceSize} user${audienceSize === 1 ? "" : "s"}`);
+      setTitle("");
+      const r = await adminApi.listAuditLog();
+      setHistory(r.logs.filter((l) => l.action === "notify.broadcast"));
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Could not send broadcast");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
-    <div className="grid lg:grid-cols-[1fr_1.2fr] gap-4">
-      <GlassCard className="p-5">
-        <SectionTitle title="Compose Broadcast" subtitle="Send to any user segment across all channels"/>
-        <form onSubmit={send} className="space-y-3">
-          <Field label="Title"><input value={title} onChange={e=>setTitle(e.target.value)} placeholder="New Prop Firm 200K launched" className={inputCls}/></Field>
-          <Field label="Message"><textarea value={message} onChange={e=>setMessage(e.target.value)} rows={5} placeholder="Full message body users will see…" className={inputCls}/></Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Audience"><select value={audience} onChange={e=>setAudience(e.target.value as any)} className={inputCls}>{audiences.map(a => <option key={a}>{a}</option>)}</select></Field>
-            <Field label="Channel"><select value={channel} onChange={e=>setChannel(e.target.value as any)} className={inputCls}>{channels.map(a => <option key={a}>{a}</option>)}</select></Field>
+    <div className="grid lg:grid-cols-3 gap-4">
+      <GlassCard className="lg:col-span-2 p-5">
+        <SectionTitle title="Broadcast Notification" subtitle="Delivered as an in-app notification — email/SMS/push aren't wired up yet" />
+        <form onSubmit={send} className="space-y-4">
+          <Field label="Message"><textarea value={title} onChange={(e) => setTitle(e.target.value)} rows={4} className={inputCls} placeholder="e.g. Scheduled maintenance tonight at 2AM UTC" /></Field>
+          <Field label="Audience">
+            <select value={audience} onChange={(e) => setAudience(e.target.value)} className={inputCls}>
+              {audiences.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
+            </select>
+          </Field>
+          <div className="rounded-xl bg-white/[0.03] border border-white/5 p-3 flex items-center gap-2 text-xs text-muted-foreground">
+            <Users size={13} className="text-brand" /> This will reach <span className="text-foreground font-semibold">{audienceSize}</span> user{audienceSize === 1 ? "" : "s"}.
           </div>
-          <Field label="Schedule (optional)"><input type="date" value={schedule} onChange={e=>setSchedule(e.target.value)} className={inputCls}/></Field>
-
-          <div className="glass rounded-xl p-3 text-xs text-muted-foreground flex items-center gap-3">
-            <Users size={14} className="text-brand"/> Estimated reach: <span className="text-foreground font-medium">{audienceSize(audience).toLocaleString()}</span> users
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <button type="button" onClick={draft} data-no-toast className="py-2.5 rounded-xl glass hover:bg-white/10 text-sm">Save Draft</button>
-            <button type="submit" className="py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium inline-flex items-center justify-center gap-2"><Send size={14}/> {schedule ? "Schedule" : "Send now"}</button>
-          </div>
+          <button type="submit" disabled={sending} className="w-full py-2.5 rounded-xl brand-gradient text-brand-foreground text-sm font-medium disabled:opacity-60 inline-flex items-center justify-center gap-2">
+            <Send size={14} /> {sending ? "Sending…" : "Send Broadcast"}
+          </button>
         </form>
       </GlassCard>
 
       <GlassCard className="p-5">
-        <SectionTitle title="History" subtitle={`${items.length} notifications`}/>
-        <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
-          {items.map(n => (
-            <div key={n.id} className="glass rounded-xl p-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-sm font-medium truncate">{n.title}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.message}</div>
-                  <div className="mt-2 flex flex-wrap gap-2 text-[10px] text-muted-foreground">
-                    <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10">{n.channel}</span>
-                    <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10">{n.audience}</span>
-                    <span className="inline-flex items-center gap-1"><Calendar size={10}/> {n.date}</span>
-                    <span>· {n.recipients.toLocaleString()} recipients</span>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  <StatusPill status={n.status === "Sent" ? "Completed" : n.status === "Scheduled" ? "Pending" : "Active"}/>
-                  <button onClick={() => remove(n.id)} data-no-toast className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-400/10" aria-label="Delete"><Trash2 size={13}/></button>
+        <SectionTitle title="Recent Broadcasts" subtitle="From the audit log" />
+        {loadingHistory ? (
+          <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-14 rounded-xl glass animate-pulse" />)}</div>
+        ) : history.length === 0 ? (
+          <div className="text-center py-8 text-xs text-muted-foreground"><Bell size={18} className="mx-auto mb-2 text-muted-foreground" />No broadcasts sent yet.</div>
+        ) : (
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {history.map((h) => (
+              <div key={h._id} className="rounded-xl bg-white/[0.03] border border-white/5 p-3">
+                <div className="text-xs font-medium truncate">{(h.meta?.title as string) || "Broadcast"}</div>
+                <div className="text-[10px] text-muted-foreground mt-1">
+                  {(h.meta?.audience as string) || "all"} · {(h.meta?.count as number) ?? "?"} recipients · {new Date(h.createdAt).toLocaleString()}
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </GlassCard>
     </div>
   );

@@ -1,16 +1,40 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Users, ArrowDownToLine, ArrowUpFromLine, DollarSign, ShieldCheck, Bell, Bot, GraduationCap, Trophy, LineChart, LifeBuoy, TrendingUp } from "lucide-react";
-import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from "recharts";
 import { StatCard, GlassCard, SectionTitle, StatusPill } from "@/components/dashboard/primitives";
-import { adminMetrics, growthSeries, revenueBySource, adminDeposits, adminWithdrawals, supportTickets, auditLog } from "@/lib/admin-data";
+import { adminApi, ApiError, type AdminMetrics, type AdminTransaction, type AdminAuditLog } from "@/lib/api";
 
 export const Route = createFileRoute("/admin/")({
+  ssr: false,
   component: AdminOverview,
 });
 
 function AdminOverview() {
-  const pendingDep = adminDeposits.filter(d => d.status === "Pending" || d.status === "Under Review");
-  const pendingWD = adminWithdrawals.filter(d => d.status === "Pending");
+  const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
+  const [pendingDep, setPendingDep] = useState<AdminTransaction[]>([]);
+  const [pendingWD, setPendingWD] = useState<AdminTransaction[]>([]);
+  const [logs, setLogs] = useState<AdminAuditLog[]>([]);
+  const [ticketCount, setTicketCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.allSettled([
+      adminApi.getMetrics(),
+      adminApi.listDeposits("Pending"),
+      adminApi.listWithdrawals("Pending"),
+      adminApi.listAuditLog(),
+      adminApi.listTickets(),
+    ]).then(([m, d, w, a, t]) => {
+      if (m.status === "fulfilled") setMetrics(m.value);
+      else toast.error(m.reason instanceof ApiError ? m.reason.message : "Could not load metrics");
+      if (d.status === "fulfilled") setPendingDep(d.value.deposits);
+      if (w.status === "fulfilled") setPendingWD(w.value.withdrawals);
+      if (a.status === "fulfilled") setLogs(a.value.logs);
+      if (t.status === "fulfilled") setTicketCount(t.value.tickets.length);
+      setLoading(false);
+    });
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -33,102 +57,83 @@ function AdminOverview() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        <StatCard label="Total Users" value={adminMetrics.totalUsers} icon={<Users size={16}/>} delta="+184 this wk" />
-        <StatCard label="Active Users" value={adminMetrics.activeUsers} icon={<TrendingUp size={16}/>} delta="+6.2%" />
-        <StatCard label="Revenue (MTD)" value={adminMetrics.monthlyRevenue} prefix="$" icon={<DollarSign size={16}/>} delta="+18.4%" />
-        <StatCard label="Total Revenue" value={adminMetrics.revenue} prefix="$" icon={<DollarSign size={16}/>} delta="All-time" />
-        <StatCard label="Deposits" value={adminMetrics.totalDeposits} prefix="$" icon={<ArrowDownToLine size={16}/>} delta="+3.4% mo" />
-        <StatCard label="Withdrawals" value={adminMetrics.totalWithdrawals} prefix="$" icon={<ArrowUpFromLine size={16}/>} delta="+2.1% mo" />
-        <StatCard label="Open Tickets" value={adminMetrics.openTickets} icon={<LifeBuoy size={16}/>} delta="4 urgent" trend="down" />
-        <StatCard label="Active Bots" value={adminMetrics.activeBots} icon={<Bot size={16}/>} delta="+12 wk" />
-      </div>
-
-      {/* Charts */}
-      <div className="grid lg:grid-cols-[1.6fr_1fr] gap-4">
-        <GlassCard className="p-5">
-          <SectionTitle title="Platform Growth" subtitle="30-day rolling — users, deposits, withdrawals" action={<Link to="/admin/users" className="text-xs text-brand hover:underline">View users →</Link>}/>
-          <div className="h-72">
-            <ResponsiveContainer>
-              <AreaChart data={growthSeries}>
-                <defs>
-                  <linearGradient id="ga" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="oklch(0.78 0.21 55)" stopOpacity={0.5}/><stop offset="100%" stopColor="oklch(0.78 0.21 55)" stopOpacity={0}/></linearGradient>
-                  <linearGradient id="gb" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="oklch(0.72 0.14 190)" stopOpacity={0.5}/><stop offset="100%" stopColor="oklch(0.72 0.14 190)" stopOpacity={0}/></linearGradient>
-                </defs>
-                <XAxis dataKey="i" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false}/>
-                <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false}/>
-                <Tooltip contentStyle={{ background: "rgba(20,20,28,0.9)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 12 }}/>
-                <Area type="monotone" dataKey="deposits" stroke="oklch(0.78 0.21 55)" fill="url(#ga)" strokeWidth={2}/>
-                <Area type="monotone" dataKey="withdrawals" stroke="oklch(0.72 0.14 190)" fill="url(#gb)" strokeWidth={2}/>
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </GlassCard>
-
-        <GlassCard className="p-5">
-          <SectionTitle title="Revenue by Source" subtitle="Last 30 days"/>
-          <div className="h-72">
-            <ResponsiveContainer>
-              <PieChart>
-                <Pie data={revenueBySource} innerRadius={60} outerRadius={95} dataKey="value" nameKey="name" paddingAngle={2}>
-                  {revenueBySource.map(s => <Cell key={s.name} fill={s.color}/>)}
-                </Pie>
-                <Legend wrapperStyle={{ fontSize: 10 }}/>
-                <Tooltip contentStyle={{ background: "rgba(20,20,28,0.9)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 12 }}/>
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </GlassCard>
+        {loading ? (
+          Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-24 rounded-2xl glass animate-pulse" />)
+        ) : (
+          <>
+            <StatCard label="Total Users" value={metrics?.totalUsers ?? 0} icon={<Users size={16}/>} />
+            <StatCard label="Active Users" value={metrics?.activeUsers ?? 0} icon={<TrendingUp size={16}/>} />
+            <StatCard label="Verified Users" value={metrics?.verifiedUsers ?? 0} icon={<ShieldCheck size={16}/>} />
+            <StatCard label="Open Tickets" value={metrics?.openTickets ?? 0} icon={<LifeBuoy size={16}/>} trend="down" />
+            <StatCard label="Deposits" value={metrics?.totalDeposits ?? 0} prefix="$" icon={<ArrowDownToLine size={16}/>} />
+            <StatCard label="Withdrawals" value={metrics?.totalWithdrawals ?? 0} prefix="$" icon={<ArrowUpFromLine size={16}/>} />
+            <StatCard label="Pending Deposits" value={metrics?.pendingDeposits ?? 0} prefix="$" icon={<ArrowDownToLine size={16}/>} trend="down" />
+            <StatCard label="Active Bots" value={metrics?.activeBots ?? 0} icon={<Bot size={16}/>} />
+          </>
+        )}
       </div>
 
       {/* Queues */}
       <div className="grid lg:grid-cols-3 gap-4">
         <GlassCard className="p-5">
           <SectionTitle title="Pending Deposits" subtitle={`${pendingDep.length} awaiting`} action={<Link to="/admin/deposits" className="text-xs text-brand hover:underline">All →</Link>}/>
-          <ul className="space-y-2">
-            {pendingDep.slice(0,5).map(d => (
-              <li key={d.id} className="flex items-center justify-between text-sm p-2 rounded-lg hover:bg-white/5">
-                <div className="min-w-0"><div className="truncate font-medium">{d.user}</div><div className="text-[10px] text-muted-foreground">{d.method} · {d.date}</div></div>
-                <div className="text-right"><div className="font-semibold">${d.amount.toLocaleString()}</div><StatusPill status={d.status === "Under Review" ? "Pending" : d.status}/></div>
-              </li>
-            ))}
-          </ul>
+          {pendingDep.length === 0 ? (
+            <div className="text-xs text-muted-foreground text-center py-6">Nothing pending.</div>
+          ) : (
+            <ul className="space-y-2">
+              {pendingDep.slice(0,5).map(d => (
+                <li key={d._id} className="flex items-center justify-between text-sm p-2 rounded-lg hover:bg-white/5">
+                  <div className="min-w-0"><div className="truncate font-medium">{d.user?.name ?? "Unknown"}</div><div className="text-[10px] text-muted-foreground">{d.method} · {new Date(d.createdAt).toLocaleDateString()}</div></div>
+                  <div className="text-right"><div className="font-semibold">${d.amount.toLocaleString()}</div><StatusPill status={d.status}/></div>
+                </li>
+              ))}
+            </ul>
+          )}
         </GlassCard>
 
         <GlassCard className="p-5">
           <SectionTitle title="Pending Withdrawals" subtitle={`${pendingWD.length} awaiting`} action={<Link to="/admin/withdrawals" className="text-xs text-brand hover:underline">All →</Link>}/>
-          <ul className="space-y-2">
-            {pendingWD.slice(0,5).map(d => (
-              <li key={d.id} className="flex items-center justify-between text-sm p-2 rounded-lg hover:bg-white/5">
-                <div className="min-w-0"><div className="truncate font-medium">{d.user}</div><div className="text-[10px] text-muted-foreground">{d.method} · {d.date}</div></div>
-                <div className="text-right"><div className="font-semibold">${d.amount.toLocaleString()}</div><StatusPill status={d.status}/></div>
-              </li>
-            ))}
-          </ul>
+          {pendingWD.length === 0 ? (
+            <div className="text-xs text-muted-foreground text-center py-6">Nothing pending.</div>
+          ) : (
+            <ul className="space-y-2">
+              {pendingWD.slice(0,5).map(d => (
+                <li key={d._id} className="flex items-center justify-between text-sm p-2 rounded-lg hover:bg-white/5">
+                  <div className="min-w-0"><div className="truncate font-medium">{d.user?.name ?? "Unknown"}</div><div className="text-[10px] text-muted-foreground">{d.method} · {new Date(d.createdAt).toLocaleDateString()}</div></div>
+                  <div className="text-right"><div className="font-semibold">${Math.abs(d.amount).toLocaleString()}</div><StatusPill status={d.status}/></div>
+                </li>
+              ))}
+            </ul>
+          )}
         </GlassCard>
 
         <GlassCard className="p-5">
           <SectionTitle title="Recent Admin Activity" subtitle="Audit log" action={<Link to="/admin/audit" className="text-xs text-brand hover:underline">All →</Link>}/>
-          <ul className="space-y-2">
-            {auditLog.slice(0,5).map((a,i) => (
-              <li key={i} className="text-sm p-2 rounded-lg hover:bg-white/5">
-                <div className="truncate">{a.action}</div>
-                <div className="text-[10px] text-muted-foreground">{a.actor} · {a.time}</div>
-              </li>
-            ))}
-          </ul>
+          {logs.length === 0 ? (
+            <div className="text-xs text-muted-foreground text-center py-6">No activity yet.</div>
+          ) : (
+            <ul className="space-y-2">
+              {logs.slice(0,5).map((a) => (
+                <li key={a._id} className="text-sm p-2 rounded-lg hover:bg-white/5">
+                  <div className="truncate">{a.action}</div>
+                  <div className="text-[10px] text-muted-foreground">{a.actor?.name ?? "System"} · {new Date(a.createdAt).toLocaleDateString()}</div>
+                </li>
+              ))}
+            </ul>
+          )}
         </GlassCard>
       </div>
 
       {/* Bottom shortcuts */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <ShortcutCard to="/admin/bots" icon={Bot} title="Trading Bots" desc="Manage marketplace, versions & risk" count={adminMetrics.activeBots}/>
-        <ShortcutCard to="/admin/academy" icon={GraduationCap} title="Academy" desc="Courses, mentors & enrollments" count={4}/>
-        <ShortcutCard to="/admin/prop-firm" icon={Trophy} title="Prop Firm" desc="Challenges, sizes & fees" count={adminMetrics.activeChallenges}/>
-        <ShortcutCard to="/admin/signals" icon={LineChart} title="Signals" desc="Publish, track hits, revoke" count={adminMetrics.signalsPushedToday}/>
-        <ShortcutCard to="/admin/notify" icon={Bell} title="Notify" desc="Broadcast in-app / email / push" count={3}/>
-        <ShortcutCard to="/admin/payments" icon={ArrowDownToLine} title="Payments" desc="Enable rails, wallets & fees" count={6}/>
-        <ShortcutCard to="/admin/pricing" icon={DollarSign} title="Pricing" desc="Plans, prices & features" count={4}/>
-        <ShortcutCard to="/admin/support" icon={LifeBuoy} title="Support" desc="Tickets & SLA management" count={supportTickets.length}/>
+        <ShortcutCard to="/admin/bots" icon={Bot} title="Trading Bots" desc="Manage marketplace, versions & risk" count={metrics?.activeBots ?? 0}/>
+        <ShortcutCard to="/admin/academy" icon={GraduationCap} title="Academy" desc="Courses, mentors & enrollments" count={0}/>
+        <ShortcutCard to="/admin/prop-firm" icon={Trophy} title="Prop Firm" desc="Challenges, sizes & fees" count={metrics?.activeChallenges ?? 0}/>
+        <ShortcutCard to="/admin/signals" icon={LineChart} title="Signals" desc="Publish, track hits, revoke" count={0}/>
+        <ShortcutCard to="/admin/notify" icon={Bell} title="Notify" desc="Broadcast in-app / email / push" count={0}/>
+        <ShortcutCard to="/admin/payments" icon={ArrowDownToLine} title="Payments" desc="Enable rails, wallets & fees" count={0}/>
+        <ShortcutCard to="/admin/pricing" icon={DollarSign} title="Pricing" desc="Plans, prices & features" count={0}/>
+        <ShortcutCard to="/admin/support" icon={LifeBuoy} title="Support" desc="Tickets & SLA management" count={ticketCount}/>
       </div>
     </div>
   );

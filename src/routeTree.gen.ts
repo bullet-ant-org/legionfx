@@ -14,10 +14,11 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
+import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PayRouteRouteImport } from './routes/pay/route'
-import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as ServicesRouteImport } from './routes/services'
+import { Route as SitemapRouteImport } from './routes/sitemap'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAcademyRouteImport } from './routes/admin/academy'
 import { Route as AdminAuditRouteImport } from './routes/admin/audit'
@@ -76,6 +77,11 @@ const DashboardRouteRoute = DashboardRouteRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeaturesRoute = FeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -86,14 +92,14 @@ const PayRouteRoute = PayRouteRouteImport.update({
   path: '/pay',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PricingRoute = PricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
   path: '/services',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapRoute = SitemapRouteImport.update({
+  id: '/sitemap',
+  path: '/sitemap',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -264,9 +270,10 @@ export interface FileRoutesByFullPath {
   '/pay': typeof PayRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/features': typeof FeaturesRoute
   '/login': typeof LoginRoute
-  '/pricing': typeof PricingRoute
   '/services': typeof ServicesRoute
+  '/sitemap': typeof SitemapRoute
   '/admin/academy': typeof AdminAcademyRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bots': typeof AdminBotsRoute
@@ -304,9 +311,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/features': typeof FeaturesRoute
   '/login': typeof LoginRoute
-  '/pricing': typeof PricingRoute
   '/services': typeof ServicesRoute
+  '/sitemap': typeof SitemapRoute
   '/admin/academy': typeof AdminAcademyRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bots': typeof AdminBotsRoute
@@ -348,9 +356,10 @@ export interface FileRoutesById {
   '/pay': typeof PayRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/features': typeof FeaturesRoute
   '/login': typeof LoginRoute
-  '/pricing': typeof PricingRoute
   '/services': typeof ServicesRoute
+  '/sitemap': typeof SitemapRoute
   '/admin/academy': typeof AdminAcademyRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bots': typeof AdminBotsRoute
@@ -393,9 +402,10 @@ export interface FileRouteTypes {
     | '/pay'
     | '/about'
     | '/contact'
+    | '/features'
     | '/login'
-    | '/pricing'
     | '/services'
+    | '/sitemap'
     | '/admin/academy'
     | '/admin/audit'
     | '/admin/bots'
@@ -433,9 +443,10 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/contact'
+    | '/features'
     | '/login'
-    | '/pricing'
     | '/services'
+    | '/sitemap'
     | '/admin/academy'
     | '/admin/audit'
     | '/admin/bots'
@@ -476,9 +487,10 @@ export interface FileRouteTypes {
     | '/pay'
     | '/about'
     | '/contact'
+    | '/features'
     | '/login'
-    | '/pricing'
     | '/services'
+    | '/sitemap'
     | '/admin/academy'
     | '/admin/audit'
     | '/admin/bots'
@@ -520,9 +532,10 @@ export interface RootRouteChildren {
   PayRouteRoute: typeof PayRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   ContactRoute: typeof ContactRoute
+  FeaturesRoute: typeof FeaturesRoute
   LoginRoute: typeof LoginRoute
-  PricingRoute: typeof PricingRoute
   ServicesRoute: typeof ServicesRoute
+  SitemapRoute: typeof SitemapRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -562,6 +575,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/features': {
+      id: '/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof FeaturesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -576,18 +596,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PayRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/pricing': {
-      id: '/pricing'
-      path: '/pricing'
-      fullPath: '/pricing'
-      preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/services': {
       id: '/services'
       path: '/services'
       fullPath: '/services'
       preLoaderRoute: typeof ServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap': {
+      id: '/sitemap'
+      path: '/sitemap'
+      fullPath: '/sitemap'
+      preLoaderRoute: typeof SitemapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -918,9 +938,10 @@ const rootRouteChildren: RootRouteChildren = {
   PayRouteRoute: PayRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   ContactRoute: ContactRoute,
+  FeaturesRoute: FeaturesRoute,
   LoginRoute: LoginRoute,
-  PricingRoute: PricingRoute,
   ServicesRoute: ServicesRoute,
+  SitemapRoute: SitemapRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

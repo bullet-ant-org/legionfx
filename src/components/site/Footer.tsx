@@ -34,9 +34,9 @@ export function Footer() {
             </div>
           </div>
 
-          <FooterCol title="Company" links={[["About","/about"],["Services","/services"],["Pricing","/pricing"],["Contact","/contact"]]} />
+          <FooterCol title="Company" links={[["About","/about"],["Features","/features"],["Services","/services"],["Contact","/contact"]]} />
           <FooterCol title="Resources" links={[["Trading Academy","/services"],["Trading Signals","/services"],["Trading Bots","/services"],["Prop Firm","/services"]]} />
-          <FooterCol title="Legal" links={[["Privacy Policy","/"],["Terms & Conditions","/"],["Cookies","/"]]} />
+          <FooterCol title="Legal" links={[["Privacy Policy","/"],["Terms & Conditions","/"],["Cookies","/"],["Sitemap","/sitemap"]]} />
         </div>
 
         <div className="mt-16 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
